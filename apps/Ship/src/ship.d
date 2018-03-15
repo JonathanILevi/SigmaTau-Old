@@ -8,12 +8,14 @@ The `Ship` class also has the main event loop. (for now at least)
 
 import std.stdio;
 
+import console_network.message;
+
 
 
 
 class Ship {
 	
-	this () {
+	this (string ip) {
 		mainLoop;
 	}
 	
