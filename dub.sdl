@@ -1,0 +1,16 @@
+name	"SigmaTau"
+description	"Spaceship Bridge Simulator, mostly experimental currently."
+authors	"Jonathan Levi"
+copyright	"Copyright © 2018, Jonathan Levi"
+license	"MIT"
+
+targetType	"none"
+
+subPackage "./apps/console/"
+subPackage "./apps/ship/"
+subPackage {
+	name	"console_network"
+	targetType	"library"
+	sourcePaths	"libraries/console_network"
+	importPaths	"libraries/console_network"
+}
