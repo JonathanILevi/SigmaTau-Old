@@ -1,4 +1,4 @@
-
+module console_network.message;
 
 
 
@@ -28,7 +28,7 @@ static class Cts {
 	template Msg(ComponentType componentType) {
 		// Adds an alias for the msg type for this component.
 		import std.string : capitalize;
-		alias Type = mixin(componentType.to!string[0].capitalize~componentType.to!string[1..$]~"MsgType"~";");
+		mixin("alias Type = "~componentType.to!string[0].capitalize~componentType.to!string[1..$]~"MsgType"~";");
 		
 		/**	A struct to deal with msg data.
 			This struct is not required for a console to work, but is convenient to deal with the network messages.
@@ -122,7 +122,7 @@ static class Cts {
 			set	= 0b10	,
 			adjust		,
 		}
-		///	Msgs not send to a component but directly to the ship (generally meta msgs).
+		///	Msgs not sent to a component but directly to the ship (generally meta msgs).
 		enum OtherMsgType : ubyte {
 			getComponents	= 0b0	,
 		}
@@ -148,7 +148,7 @@ static class Stc {
 	template Msg(ComponentType componentType) {
 		// Adds an alias for the msg type for this component.
 		import std.string : capitalize;
-		alias Type = mixin(componentType.to!string[0].capitalize ~ componentType.to!string[1..$] ~ "MsgType;");
+		mixin("alias Type = "~componentType.to!string[0].capitalize ~ componentType.to!string[1..$] ~ "MsgType;");
 
 		/**	A struct to deal with msg data.
 		This struct is not required for a console to work, but is convenient to deal with the network messages
@@ -229,11 +229,17 @@ static class Stc {
 	/*	The msg type enums.
 		Each component has specified msg types.
 	*/
-	enum RadarMsgType {
-		pip	= 0b0	,
-	}
-	enum ThrusterMsgType {
-		power	=0b0	,
+	public {
+		enum RadarMsgType {
+			pip	= 0b0	,
+		}
+		enum ThrusterMsgType {
+			power	=0b0	,
+		}
+		///	Msgs not sent to a component but directly to the ship (generally meta msgs).
+		enum OtherMsgType : ubyte {
+			components	= 0b0	,
+		}
 	}
 
 }
