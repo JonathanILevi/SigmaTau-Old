@@ -25,16 +25,17 @@ static class Cts {
 	
 	/**	Msg code specific to a type of componet.
 	*/
-	template Msg(ComponentType componentType) {
+	template ComponentMsg(ComponentType componentType) {
 		// Adds an alias for the msg type for this component.
-		import std.string : capitalize;
-		mixin("alias Type = "~componentType.to!string[0].capitalize~componentType.to!string[1..$]~"MsgType"~";");
+		import std.string	: capitalize	;
+		import std.conv	: to	;
+		mixin("alias Type = "~componentType.to!string.capitalize~"MsgType"~";");
 		
 		/**	A struct to deal with msg data.
 			This struct is not required for a console to work, but is convenient to deal with the network messages.
 		*/
-		struct Msg(Type type) {
-			alias Type = Type;
+		struct Msg(Type msgType) {
+			////alias Type = Type;
 			
 			//---Always values
 			public {
@@ -45,11 +46,11 @@ static class Cts {
 			//---Other values
 			public {
 				/*thruster set*/
-				static if (componentType==ComponentType.thruster && type==Type.set) {
+				static if (componentType==ComponentType.thruster && msgType==Type.set) {
 					float	power	;
 				}
 				/*thruster adjust*/
-				static if (componentType==ComponentType.thruster && type==Type.adjust) {
+				static if (componentType==ComponentType.thruster && msgType==Type.adjust) {
 					float	amount	;
 				}
 			}
@@ -57,12 +58,12 @@ static class Cts {
 			//---methods
 			public {
 				ubyte[] byteData() {
-					assert(this.type == type);
+					assert(this.type == msgType);
 					return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
 				}
 				this(ubyte[] data) {
 					this = *(cast(typeof(this)*)cast(void*)data[1..$].ptr);
-					assert(this.type == type);
+					assert(this.type == msgType);
 					assert(data[0] == length);
 				}
 				ubyte length() {
@@ -145,15 +146,16 @@ static class Stc {
 
 	/**	Msg code specific to a type of componet.
 	*/
-	template Msg(ComponentType componentType) {
+	template ComponentMsg(ComponentType componentType) {
 		// Adds an alias for the msg type for this component.
-		import std.string : capitalize;
-		mixin("alias Type = "~componentType.to!string[0].capitalize ~ componentType.to!string[1..$] ~ "MsgType;");
+		import std.string	: capitalize	;
+		import std.conv	: to	;
+		mixin("alias Type = "~componentType.to!string.capitalize~"MsgType"~";");
 
 		/**	A struct to deal with msg data.
 		This struct is not required for a console to work, but is convenient to deal with the network messages
 		*/
-		struct Msg(Type type) {
+		struct Msg(Type msgType) {
 			//---Always values
 			public {
 				ubyte	component	;
@@ -163,11 +165,11 @@ static class Stc {
 			//---Other values
 			public {
 				/*thruster set*/
-				static if (componentType==ComponentType.thruster && type==Type.set) {
+				static if (componentType==ComponentType.thruster && msgType==Type.set) {
 					float	power	;
 				}
 				/*thruster adjust*/
-				static if (componentType==ComponentType.thruster && type==Type.adjust) {
+				static if (componentType==ComponentType.thruster && msgType==Type.adjust) {
 					float	amount	;
 				}
 			}
@@ -175,12 +177,12 @@ static class Stc {
 			//---methods
 			public {
 				ubyte[] byteData() {
-					assert(this.type == type);
+					assert(this.type == msgType);
 					return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
 				}
 				this(ubyte[] data) {
 					this = *(cast(typeof(this)*)cast(void*)data[1..$].ptr);
-					assert(this.type == type);
+					assert(this.type == msgType);
 					assert(data[0] == length);
 				}
 				ubyte length() {
