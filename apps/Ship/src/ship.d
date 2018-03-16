@@ -8,12 +8,20 @@ The `Ship` class also has the main event loop. (for now at least)
 
 import std.stdio;
 
+import cst_;
+
 import console_network.message;
 
+import console;
+
+import	networking	;
+static import	networking.ship	;
+alias ShipNetworkCallbackInterface = networking.Ship;
 
 
 
-class Ship {
+
+class Ship : ShipNetworkCallbackInterface {
 	
 	this (string ip) {
 		mainLoop;
@@ -34,5 +42,18 @@ class Ship {
 	}
 	
 	
+	//---ShipNetworkCallbackInterface callbacks
+	public {
+		void on_consoleConnected(Console console) {
+
+		}
+		void on_consoleDisconnected(Console console) {
+
+		}
+	}
+	
+	
 	
 }
+
+
