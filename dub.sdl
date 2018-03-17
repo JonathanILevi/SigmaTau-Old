@@ -16,3 +16,12 @@ subPackage {
 	workingDirectory	"built"
 	targetPath	"built"
 }
+subPackage {
+	name	"msg_queue"
+	targetType	"library"
+	sourcePaths	"libraries/msg_queue"
+	importPaths	"libraries/msg_queue"
+	dependency	"queue"	version="~>1.0.0"
+	workingDirectory	"built"
+	targetPath	"built"
+}
