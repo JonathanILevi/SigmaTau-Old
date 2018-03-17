@@ -29,8 +29,14 @@ class Ship : ShipNetworkCallbackInterface {
 		addComponent!(ComponentType.radar)();
 		addComponent!(ComponentType.thruster)();
 		addComponent!(ComponentType.thruster)();
+		
+		static import	networking.components	;
+		this.networking = new Networking(this.cst!ShipNetworkCallbackInterface, this.components.cst!(networking.Component[]), ip);
 		mainLoop;
 	}
+	
+
+	Networking	networking;
 	
 	//---components
 	public {
@@ -46,8 +52,8 @@ class Ship : ShipNetworkCallbackInterface {
 			import core.thread;
 			import core.time;
 			Thread.sleep(msecs(10));
-				
-			// call updates
+			
+			networking.update;
 		}
 	}
 	
