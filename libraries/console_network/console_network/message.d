@@ -45,7 +45,12 @@ template Messages(MsgDirection msgDirection) {
 			
 			//---Always values
 			public {
-				ubyte	component	;
+				static if (componentType==ComponentType.other) {
+					ubyte	component	= ubyte.max;
+				} else {
+					ubyte	component	;
+				}
+
 				Type	type	;
 			}
 
@@ -72,7 +77,8 @@ template Messages(MsgDirection msgDirection) {
 				/**	Get the network stream byte data
 				*/
 				ubyte[] byteData() {
-					assert(this.type == msgType);
+					static if (componentType==ComponentType.other) assert(this.component==ubyte.max, "Message Data not set properly");
+					assert(this.type == msgType, "Message data not set properly");
 				
 					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
 						return	length
