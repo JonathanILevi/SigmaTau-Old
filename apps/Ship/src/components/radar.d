@@ -31,10 +31,10 @@ class Radar : Component, RadarNetworkCallbackInterface {
 	public {
 		private alias Msg = Cts.ComponentMsg!(ComponentType.radar);
 
-		void on_read(Msg.Msg!(Msg.Type.read) msg, Console sender) {
+		void on_read(Cts.RadarMsg.Read msg, Console sender) {
 			"Got read msg to radar.".writeln;
 		}
-		void on_stream(Msg.Msg!(Msg.Type.stream) msg, Console sender) {
+		void on_stream(Cts.RadarMsg.Stream msg, Console sender) {
 			"Got stream msg to radar.".writeln;
 		}
 	}

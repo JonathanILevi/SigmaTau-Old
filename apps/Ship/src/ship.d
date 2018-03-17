@@ -68,10 +68,14 @@ class Ship : ShipNetworkCallbackInterface {
 	//---ShipNetworkCallbackInterface callbacks
 	public {
 		void on_consoleConnected(Console console) {
-
+			"console connected".writeln;
 		}
 		void on_consoleDisconnected(Console console) {
-
+			"console disconnenctid".writeln;
+		}
+		
+		void on_getComponents(Cts.OtherMsg.GetComponents msg, Console sender) {
+			"getComponents".writeln;
 		}
 	}
 	
