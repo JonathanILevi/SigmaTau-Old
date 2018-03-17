@@ -11,6 +11,10 @@ class Console {
 		this.socket	= socket	;
 		this.msgQueue	= new MsgQueue(socket)	;
 	}
+	~this() {
+		socket.shutdown(SocketShutdown.BOTH);
+		socket.close();
+	}
 	
 	Socket	socket	;
 	MsgQueue	msgQueue	;// for `networking`

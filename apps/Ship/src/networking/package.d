@@ -64,6 +64,10 @@ class Networking {
 		}
 		//---
 	}
+	~this() {
+		listener.shutdown(SocketShutdown.BOTH);
+		listener.close();
+	}
 
 	
 	void update() {
