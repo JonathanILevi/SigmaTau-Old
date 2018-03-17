@@ -19,3 +19,5 @@ built/
 
 
 apps/Ship/dub\.selections\.json
+
+apps/Console/dub\.selections\.json
