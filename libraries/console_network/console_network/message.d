@@ -1,27 +1,31 @@
 module console_network.message;
 
+import cst_;
+
+public import console_network.enums;
 
 
-
-
-/**	Ship Component Types.
-	The functionallity of a player ship in SigmaTau is contained almost entirely in the ships "components".
-	Componets are things like the ships sensors and engines, but also "vertual" sensors like "tactical" which is actually a ship level interpretation of the other sensors on the ship.
+/**	This is an enum to mark the direction the msg is designed to go.
+	This is use for template namespaces for msg types.
+	This enum does not need to be used outside of this file, the `Cts`&`Stc` namespace template mixins are normally easier.
 */
-enum ComponentType : ubyte {
-	radar	,
-	thruster	,
+enum MsgDirection : bool {
+	consoleToShip	= false	,
+	shipToConsole	= true	,
+	cts	= false	,
+	stc	= true	,
 }
-
-
-
-
+alias MsgDir = MsgDirection;
 
 
 
 /**	The namespace with all the "Console to Ship" specifice types, data, and code.
 */
-static class Cts {
+template Messages(MsgDirection msgDirection) {
+	private enum cts = msgDirection == MsgDirection.cts;
+	private enum stc = msgDirection == MsgDirection.stc;
+	
+	
 	
 	/**	Msg code specific to a type of componet.
 	*/
@@ -29,13 +33,15 @@ static class Cts {
 		// Adds an alias for the msg type for this component.
 		import std.string	: capitalize	;
 		import std.conv	: to	;
-		mixin("alias Type = "~componentType.to!string.capitalize~"MsgType"~";");
+		mixin("alias Type = "~(cts?"Cts":"Stc")~componentType.to!string.capitalize~"MsgType"~";");
+		
+		
 		
 		/**	A struct to deal with msg data.
 			This struct is not required for a console to work, but is convenient to deal with the network messages.
 		*/
 		struct Msg(Type msgType) {
-			////alias Type = Type;
+			alias Type = ComponentMsg!componentType.Type;
 			
 			//---Always values
 			public {
@@ -44,7 +50,7 @@ static class Cts {
 			}
 
 			//---Other values
-			public {
+			static if (cts) {
 				/*thruster set*/
 				static if (componentType==ComponentType.thruster && msgType==Type.set) {
 					float	power	;
@@ -54,201 +60,119 @@ static class Cts {
 					float	amount	;
 				}
 			}
-
-			//---methods
-			public {
-				ubyte[] byteData() {
-					assert(this.type == msgType);
-					return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
-				}
-				this(ubyte[] data) {
-					this = *(cast(typeof(this)*)cast(void*)data[1..$].ptr);
-					assert(this.type == msgType);
-					assert(data[0] == length);
-				}
-				ubyte length() {
-					return this.sizeof-2;
-				}
-			}
-		}
-	}
-
-	
-	/**	Msg struct for msgs that are not attached to any compont.
-		(component -1/.max)
-		This struct is not required for a console to work, but is convenient to deal with the network messages.
-	*/
-	struct OtherMsg(OtherMsgType type) {
-		alias Type = OtherMsgType;
-		//---Always values
-		public {
-			private ubyte	component = ubyte.max	;// Always -1/max because that is what defines the msg as type other.
-			Type	type	;
-		}
-
-		//---Other values
-		public {
-		}
-
-		//---methods
-		public {
-			ubyte[] byteData() {
-				assert(this.type == type);
-				return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
-			}
-			this(ubyte[] data) {
-				this = *(cast(typeof(this)*)cast(void*)data[1..$].ptr);
-				assert(this.type == type);
-				assert(data[0] == length);
-			}
-			ubyte length() {
-				return this.sizeof-2;
-			}
-		}
-	}
-
-	
-	
-	/*	The msg type enums.
-		Each component has specified msg types.
-	*/
-	public {
-		enum RadarMsgType {
-			read	= 0b0	,
-			stream		,
-		}
-		enum ThrusterMsgType {
-			read	= 0b0	,
-			stream		,
-			set	= 0b10	,
-			adjust		,
-		}
-		///	Msgs not sent to a component but directly to the ship (generally meta msgs).
-		enum OtherMsgType : ubyte {
-			getComponents	= 0b0	,
-		}
-	}
-	
-}
-
-
-
-
-
-
-
-
-
-
-/**	The namespace with all the "Ship to Console" specifice types, data, and code.
-*/
-static class Stc {
-
-	/**	Msg code specific to a type of componet.
-	*/
-	template ComponentMsg(ComponentType componentType) {
-		// Adds an alias for the msg type for this component.
-		import std.string	: capitalize	;
-		import std.conv	: to	;
-		mixin("alias Type = "~componentType.to!string.capitalize~"MsgType"~";");
-
-		/**	A struct to deal with msg data.
-		This struct is not required for a console to work, but is convenient to deal with the network messages
-		*/
-		struct Msg(Type msgType) {
-			//---Always values
-			public {
-				ubyte	component	;
-				Type	type	;
-			}
-
-			//---Other values
-			public {
-				/*thruster set*/
-				static if (componentType==ComponentType.thruster && msgType==Type.set) {
-					float	power	;
-				}
-				/*thruster adjust*/
-				static if (componentType==ComponentType.thruster && msgType==Type.adjust) {
-					float	amount	;
+			static if (stc) {
+				/*other components*/
+				static if (componentType==ComponentType.other && msgType==Type.components) {
+					ComponentType[]	components	;
 				}
 			}
 
 			//---methods
 			public {
+				/**	Get the network stream byte data
+				*/
 				ubyte[] byteData() {
 					assert(this.type == msgType);
-					return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
+				
+					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
+						return	length
+							~	((cast(ubyte*)cast(void*)&this)[0..this.sizeof])	
+								[0..$-components.sizeof]	
+							~	components.cst!(ubyte[])	;
+					}
+					else {
+						return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
+					}
 				}
+				/**	Create msg with a network streamed byte data
+				*/
 				this(ubyte[] data) {
-					this = *(cast(typeof(this)*)cast(void*)data[1..$].ptr);
+					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
+						ComponentType[] cmpnts = data[this.bodyLength..$].cst!(ComponentType[]);
+						this =	*(	(	data[1..bodyLength]
+									~cmpnts.cst!(ubyte[])
+								)
+								.ptr
+								.cst!(void*)
+								.cst!(typeof(this)*)	
+							);
+					}
+					else {
+						this =	*(	data
+								[1..$]
+								.ptr
+								.cst!(void*)
+								.cst!(typeof(this)*)
+							);
+					}
 					assert(this.type == msgType);
 					assert(data[0] == length);
 				}
+				/**	The length of the main body of the msg.
+					This length is the length of the non dyamic tail.
+					The msg tail is the part of some msgs that changes length depending on the amount of space needed (e.g. a dynamic array of something).
+				*/
+				static ubyte bodyLength() {
+					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
+						return this.sizeof-2-components.sizeof;
+					}
+					else {
+						return this.sizeof-2;
+					}
+				}
+				/**	The total length of the message with its dynamic tail.
+				*/
 				ubyte length() {
-					return this.sizeof-2;//-2 for msg header
+					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
+						return bodyLength+components.length.cst!ubyte&0xff;
+					}
+					else {
+						return bodyLength;
+					}
 				}
 			}
 		}
-	}
+		
 
-	
-	/**	Msg struct for msgs that are not attached to any compont.
-		(component -1/.max)
-		This struct is not required for a console to work, but is convenient to deal with the network messages.
-	*/
-	struct OtherMsg(OtherMsgType type) {
-		alias Type = OtherMsgType;
-		//---Always values
-		public {
-			private ubyte	component = ubyte.max	;// Always -1/max because that is what defines the msg as type other.
-			Type	type	;
-		}
-
-		//---Other values
-		public {
-		}
-
-		//---methods
-		public {
-			ubyte[] byteData() {
-				assert(this.type == type);
-				return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
+		//---Aliases for easier use of template.
+		static if (cts) {
+			static if (componentType == ComponentType.radar) {
+				alias Read	= Msg!(Type.read)	;
+				alias Stream	= Msg!(Type.stream)	;
 			}
-			this(ubyte[] data) {
-				this = *(cast(typeof(this)*)cast(void*)data[1..$].ptr);
-				assert(this.type == type);
-				assert(data[0] == length);
+			static if (componentType == ComponentType.thruster) {
+				alias Read	= Msg!(Type.read)	;
+				alias Stream	= Msg!(Type.stream)	;
+				alias Set	= Msg!(Type.set)	;
+				alias Adjust	= Msg!(Type.adjust)	;
 			}
-			ubyte length() {
-				return this.sizeof-2;
+			static if (componentType == ComponentType.other) {
+				alias GetComponents	= Msg!(Type.getComponents)	;
 			}
 		}
+		static if (stc) {
+			static if (componentType == ComponentType.radar) {
+				alias Pip	= Msg!(Type.pip)	;
+			}
+			static if (componentType == ComponentType.thruster) {
+				alias Power	= Msg!(Type.power)	;
+			}
+			static if (componentType == ComponentType.other) {
+				alias Components	= Msg!(Type.components)	;
+			}
+		}
+		
 	}
-
+	//---Aliases for easier use of template.
+	mixin ComponentMsg!(ComponentType.radar)	RadarMsg	;
+	mixin ComponentMsg!(ComponentType.thruster)	ThrusterMsg	;
 	
+	mixin ComponentMsg!(ComponentType.other)	OtherMsg	;
 	
-	/*	The msg type enums.
-		Each component has specified msg types.
-	*/
-	public {
-		enum RadarMsgType {
-			pip	= 0b0	,
-		}
-		enum ThrusterMsgType {
-			power	=0b0	,
-		}
-		///	Msgs not sent to a component but directly to the ship (generally meta msgs).
-		enum OtherMsgType : ubyte {
-			components	= 0b0	,
-		}
-	}
-
 }
-
-
-
-
+//---Aliases for easier use of template.
+mixin Messages!(MsgDir.cts)	Cts	;
+mixin Messages!(MsgDir.stc)	Stc	;
 
 
 
