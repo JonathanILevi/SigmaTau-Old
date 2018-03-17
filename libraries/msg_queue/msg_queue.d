@@ -25,6 +25,8 @@ class MsgQueue {
 		this.queue	= new Queue!(ubyte[])	;
 				
 		this.msgThread	= new MsgThread(socket, queue)	;
+
+		socket.blocking = true;
 		
 		msgThread.start();
 	}
