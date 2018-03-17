@@ -76,17 +76,6 @@ private class MsgThread : Thread {
 		}
 	}
 	
-	private ubyte[] receiveDynamic() {
-		ubyte[258]* buffer;
-		ptrdiff_t length = socket.receive(*buffer);
-
-		if (length == Socket.ERROR) {
-			return [];
-		}
-
-		return (*buffer)[0..length];
-	}
-	
 }
 
 
