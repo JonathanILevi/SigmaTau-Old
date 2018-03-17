@@ -13,4 +13,6 @@ subPackage {
 	targetType	"library"
 	sourcePaths	"libraries/console_network"
 	importPaths	"libraries/console_network"
+	workingDirectory	"built"
+	targetPath	"built"
 }

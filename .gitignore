@@ -13,4 +13,9 @@ sigmatau-test-*
 *.obj
 *.lst
 
+built/
+
 .vs/
+
+
+apps/Ship/dub\.selections\.json
