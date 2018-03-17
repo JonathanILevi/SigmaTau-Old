@@ -13,6 +13,7 @@ subPackage {
 	targetType	"library"
 	sourcePaths	"libraries/console_network"
 	importPaths	"libraries/console_network"
+	dependency	"cst"	version="~>1.0.4"
 	workingDirectory	"built"
 	targetPath	"built"
 }
@@ -22,6 +23,7 @@ subPackage {
 	sourcePaths	"libraries/msg_queue"
 	importPaths	"libraries/msg_queue"
 	dependency	"queue"	version="~>1.0.0"
+	dependency	"cst"	version="~>1.0.4"
 	workingDirectory	"built"
 	targetPath	"built"
 }
