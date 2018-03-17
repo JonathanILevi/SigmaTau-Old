@@ -14,6 +14,8 @@ import console_network.message;
 
 import console;
 
+import components.component;
+
 import	networking	;
 static import	networking.ship	;
 alias ShipNetworkCallbackInterface = networking.Ship;
@@ -24,7 +26,15 @@ alias ShipNetworkCallbackInterface = networking.Ship;
 class Ship : ShipNetworkCallbackInterface {
 	
 	this (string ip) {
+		addComponent!(ComponentType.radar)();
+		addComponent!(ComponentType.thruster)();
+		addComponent!(ComponentType.thruster)();
 		mainLoop;
+	}
+	
+	//---components
+	public {
+		Component[] components;
 	}
 	
 	
@@ -39,6 +49,19 @@ class Ship : ShipNetworkCallbackInterface {
 				
 			// call updates
 		}
+	}
+	
+	
+	/**	Used internally to add a component.
+		Currently the components cannot change while a console is connented.
+	*/
+	private void addComponent(ComponentType componentType)() {
+		with (ComponentType) {
+			import components;
+			static if	(componentType == radar	) {	this.components ~= new Radar	()	;}
+			else if	(componentType == thruster	) {	this.components ~= new Thruster	()	;}
+		}
+		writeln(components);
 	}
 	
 	
