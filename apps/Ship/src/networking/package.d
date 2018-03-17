@@ -83,8 +83,9 @@ class Networking {
 				with (Cts) {
 					/*cNum == msgData[1]*/pragma(inline, true)ubyte cNum() @property { return msgData[1]; }// componentNum
 					/*msgType == msgData[2]*/pragma(inline, true) ubyte msgType() @property { return msgData[2]; }
-					
-					ComponentType	cType	= components[cNum].type	;// componentType
+					ComponentType cType; // componentType
+					if (cNum == ubyte.max)	{ cType = ComponentType.other	;	}
+					else	{ cType = components[cNum].type	;	}
 								
 					if (cType==ComponentType.radar) {
 						if (msgType == RadarMsg.Type.read)	{	components[cNum].cst!Radar.on_read	( RadarMsg.Read(msgData)	,console);	}
