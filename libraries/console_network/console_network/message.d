@@ -84,12 +84,11 @@ template Messages(MsgDirection msgDirection) {
 				
 					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
 						return	length
-							~	((cast(ubyte*)cast(void*)&this)[0..this.sizeof])	
-								[0..$-components.sizeof]	
+							~	((cast(ubyte*)cast(void*)&this)[0..bodyLength+2])//+2 for the partial head (length has not been added yet)
 							~	components.cst!(ubyte[])	;
 					}
 					else {
-						return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
+						return length~((cast(ubyte*)cast(void*)&this)[0..bodyLength+2]);//+2 for the partial head (length has not been added yet)
 					}
 				}
 				/**	Initialize Msg with componentNum
