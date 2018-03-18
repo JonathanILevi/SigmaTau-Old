@@ -2,6 +2,8 @@ module console_network.message;
 
 import cst_;
 
+import std.stdio;
+
 public import console_network.enums;
 
 
@@ -119,11 +121,24 @@ template Messages(MsgDirection msgDirection) {
 					The msg tail is the part of some msgs that changes length depending on the amount of space needed (e.g. a dynamic array of something).
 				*/
 				static ubyte bodyLength() {
+					ubyte calc() {
+						import std.traits	: Fields;
+						import std.meta	: AliasSeq;
+						if (!__ctfe) { assert(false); }
+						alias Types = Fields!(typeof(this));
+						uint size;
+						foreach (T; Types) {
+							size+=T.sizeof;
+						}
+						return size.cst!ubyte;
+					}
+					
+					enum baseSize = calc;
 					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
-						return this.sizeof-2-components.sizeof;
+						return baseSize-2-components.sizeof;
 					}
 					else {
-						return this.sizeof-2;
+						return baseSize-2;
 					}
 				}
 				/**	The total length of the message with its dynamic tail.
