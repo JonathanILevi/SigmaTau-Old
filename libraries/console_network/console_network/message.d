@@ -92,6 +92,11 @@ template Messages(MsgDirection msgDirection) {
 						return length~((cast(ubyte*)cast(void*)&this)[0..this.sizeof]);
 					}
 				}
+				/**	Initialize Msg with componentNum
+				*/
+				static if (componentType!=ComponentType.other) this(ubyte componentNum) {
+					this.component = componentNum;
+				}
 				/**	Create msg with a network streamed byte data
 				*/
 				this(ubyte[] data) {
