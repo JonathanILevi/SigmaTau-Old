@@ -45,10 +45,10 @@ public {
 
 
 
-	enum StcRadarMsgType {
+	enum StcRadarMsgType : ubyte {
 		pip	= 0b0	,
 	}
-	enum StcThrusterMsgType {
+	enum StcThrusterMsgType : ubyte {
 		power	= 0b0	,
 	}
 	///	The meta component; theses mesages are not sent from a normal component but directly from the ship (generally meta msgs).
