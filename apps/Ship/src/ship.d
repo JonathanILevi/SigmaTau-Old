@@ -82,6 +82,13 @@ class Ship : ShipNetworkCallbackInterface {
 		}
 		
 		void on_getComponents(Cts.OtherMsg.GetComponents msg, Console sender) {
+			Stc.OtherMsg.Components res;//response
+			this.components.writeln;
+			
+			import std.conv : to;
+			this.components.to!(ComponentType[]).writeln;
+			res.components = this.components.to!(ComponentType[]);
+			sender.send(res);
 			"getComponents".writeln;
 		}
 	}
