@@ -55,6 +55,13 @@ class Console {
 					if (msg[2] == Stc.OtherMsg.Type.components) {
 						shipComponents = msg[3..$].cst!(ComponentType[]);
 						shipComponents.writeln;
+						import std.algorithm.iteration	;
+						import std.algorithm.searching	;
+						import std.range	;
+						ubyte radarNum = shipComponents.countUntil(ComponentType.radar).cst!ubyte;
+						if (radarNum>=0){
+							socket.send(Cts.RadarMsg.Read(radarNum).byteData);
+						}
 					}
 				}
 			}
