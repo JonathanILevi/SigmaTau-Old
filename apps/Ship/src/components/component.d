@@ -22,6 +22,10 @@ abstract class Component : ConponentNetworkCallbackInterface {
 	this () {
 		
 	}
+	abstract ComponentType type() @property;
+	ComponentType opCast(T:ComponentType)() {
+		return this.type;
+	}
 }
 
 
