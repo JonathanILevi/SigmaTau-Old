@@ -31,7 +31,8 @@ class Ship : ShipNetworkCallbackInterface {
 		addComponent!(ComponentType.thruster)();
 		
 		static import	networking.components	;
-		this.networking = new Networking(this.cst!ShipNetworkCallbackInterface, this.components.cst!(networking.Component[]), ip);
+		import std.conv : to;
+		this.networking = new Networking(this.cst!ShipNetworkCallbackInterface, this.components.to!(networking.Component[]), ip);
 		mainLoop;
 	}
 	
