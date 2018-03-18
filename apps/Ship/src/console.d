@@ -18,4 +18,8 @@ class Console {
 	
 	Socket	socket	;
 	MsgQueue	msgQueue	;// for `networking`
+	
+	void send(Msg)(Msg msg) if (__traits(compiles, "msg.byteData")) {
+		socket.send(msg.byteData);
+	}
 }
