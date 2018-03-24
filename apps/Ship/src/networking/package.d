@@ -68,7 +68,6 @@ class Networking {
 		listener.shutdown(SocketShutdown.BOTH);
 		listener.close();
 	}
-
 	
 	void update() {
 		{
@@ -92,17 +91,17 @@ class Networking {
 					else	{ cType = components[cNum].type	;	}
 								
 					if (cType==ComponentType.radar) {
-						if (msgType == RadarMsg.Type.read)	{	components[cNum].cst!Radar.on_read	( RadarMsg.Read(msgData)	,console);	}
-						if (msgType == RadarMsg.Type.stream)	{	components[cNum].cst!Radar.on_stream	( RadarMsg.Stream(msgData)	,console);	}
+						if (msgType == RadarMsg.Type.read)	{	components[cNum].newMsg	( new RadarMsg.Read(msgData)	,console);	}
+						if (msgType == RadarMsg.Type.stream)	{	components[cNum].newMsg	( new RadarMsg.Stream(msgData)	,console);	}
 					}
 					else if (cType==ComponentType.thruster) {
-						if (msgType == ThrusterMsg.Type.read)	{	components[cNum].cst!Thruster.on_read	( ThrusterMsg.Read(msgData)	,console);	}
-						if (msgType == ThrusterMsg.Type.stream)	{	components[cNum].cst!Thruster.on_stream	( ThrusterMsg.Stream(msgData)	,console);	}
-						if (msgType == ThrusterMsg.Type.set)	{	components[cNum].cst!Thruster.on_set	( ThrusterMsg.Set(msgData)	,console);	}
-						if (msgType == ThrusterMsg.Type.adjust)	{	components[cNum].cst!Thruster.on_adjust	( ThrusterMsg.Adjust(msgData)	,console);	}
+						if (msgType == ThrusterMsg.Type.read)	{	components[cNum].newMsg	( new ThrusterMsg.Read(msgData)	,console);	}
+						if (msgType == ThrusterMsg.Type.stream)	{	components[cNum].newMsg	( new ThrusterMsg.Stream(msgData)	,console);	}
+						if (msgType == ThrusterMsg.Type.set)	{	components[cNum].newMsg	( new ThrusterMsg.Set(msgData)	,console);	}
+						if (msgType == ThrusterMsg.Type.adjust)	{	components[cNum].newMsg	( new ThrusterMsg.Adjust(msgData)	,console);	}
 					}
 					else if (cType==ComponentType.other) {
-						if (msgType == OtherMsg.Type.getComponents)	{	ship.on_getComponents	( OtherMsg.GetComponents(msgData)	,console);	}
+						if (msgType == OtherMsg.Type.getComponents)	{	ship.on_getComponents	( new OtherMsg.GetComponents(msgData)	,console);	}
 					}
 					else {
 						assert(false, "Bad component type for msg");

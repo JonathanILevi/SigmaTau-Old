@@ -1,10 +1,15 @@
+/**
+This is the msg classes and such to make dealing with network msgs for natural.
+*/
+
 module console_network.message;
 
 import cst_;
 
 import std.stdio;
 
-public import console_network.enums;
+public import	console_network.enums	;
+private import	console_network.msg_structure_spec	;
 
 
 /**	This is an enum to mark the direction the msg is designed to go.
@@ -26,138 +31,116 @@ alias MsgDir = MsgDirection;
 template Messages(MsgDirection msgDirection) {
 	private enum cts = msgDirection == MsgDirection.cts;
 	private enum stc = msgDirection == MsgDirection.stc;
-	
-	
-	
+
+
+
+
+
 	/**	Msg code specific to a type of componet.
 	*/
 	template ComponentMsg(ComponentType componentType) {
 		// Adds an alias for the msg type for this component.
 		import std.string	: capitalize	;
 		import std.conv	: to	;
-		mixin("alias Type = "~(cts?"Cts":"Stc")~componentType.to!string.capitalize~"MsgType"~";");
-		
-		
-		
-		/**	A struct to deal with msg data.
-			This struct is not required for a console to work, but is convenient to deal with the network messages.
+		mixin("alias Type = "~(cts?"Cts":"Stc")~componentType.to!string.toUpperFirst~"MsgType"~";");
+
+
+
+		/**	A class to deal with msg data.
+			This class is not required for a console to work, but is convenient to deal with the network messages.
 		*/
-		struct Msg(Type msgType) {
-			alias Type = ComponentMsg!componentType.Type;
+		class Msg(Type msgType) : Messages!msgDirection.Msg {
+			//---`alias`s to CT data of what this msg data is.
+			private {
+				mixin("alias ValueBodyData = "~(cts?"Cts":"Stc")~componentType.to!string.toUpperFirst~"MsgBody"~msgType.to!string.toUpperFirst~";");
+				mixin("alias hasTail = "~(cts?"Cts":"Stc")~componentType.to!string.toUpperFirst~"MsgHasTail"~msgType.to!string.toUpperFirst~";");
+			}
 			
-			//---Always values
+			//---Actual data of class
 			public {
-				static if (componentType==ComponentType.other) {
-					ubyte	component	= ubyte.max;
-				} else {
-					ubyte	component	;
-				}
-
-				Type	type	;
+				//ubyte[2] byteHeadPartial; // In base class.
+				ubyte[calcBodyLength!ValueBodyData()] byteBody;
+				static if (hasTail) 
+					ubyte[] byteTail;
+				else
+					enum ubyte[] byteTail = [];
 			}
-
-			//---Other values
-			static if (cts) {
-				/*thruster set*/
-				static if (componentType==ComponentType.thruster && msgType==Type.set) {
-					float	power	;
-				}
-				/*thruster adjust*/
-				static if (componentType==ComponentType.thruster && msgType==Type.adjust) {
-					float	amount	;
-				}
-			}
-			static if (stc) {
-				/*other components*/
-				static if (componentType==ComponentType.other && msgType==Type.components) {
-					ComponentType[]	components	;
-				}
-			}
-
-			//---methods
-			public {
-				/**	Get the network stream byte data
-				*/
-				ubyte[] byteData() {
-					static if (componentType==ComponentType.other) assert(this.component==ubyte.max, "Message Data not set properly");
-					assert(this.type == msgType, "Message data not set properly");
 				
-					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
-						return	length
-							~	((cast(ubyte*)cast(void*)&this)[0..bodyLength+2])//+2 for the partial head (length has not been added yet)
-							~	components.cst!(ubyte[])	;
+			//---Value accessors.
+			@property {
+				override ubyte component	() {	static if (componentType == ComponentType.other) assert(byteHeadPartial[1]==ubyte.max, "For `other` type msgs component must be ubyte.max.")	;
+						return byteHeadPartial[0]	;}
+				Type type	() {	assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match.")	;
+						return byteHeadPartial[1].cst!(Type)	;}
+				
+				// Mixin getters and setters for other (msg specific) values.
+				static foreach(Value; ValueBodyData.Values) {
+					mixin("Value.Type "~Value.name~"(){ return *((&byteBody[offset!ValueBodyData(Value.name)]).cst!(void*).cst!(Value.Type*));}");
+					mixin("void "~Value.name~"(Value.Type value){ *((&byteBody[offset!ValueBodyData(Value.name)]).cst!(void*).cst!(Value.Type*)) = value;}");
+				}
+			}
+			//---Tail accessors
+			@property {
+				static if (stc && componentType==ComponentType.other && msgType==Type.components) {
+					import std.conv : to;
+					ComponentType[] components() {
+						return byteTail.to!(ComponentType[]);
 					}
-					else {
-						return length~((cast(ubyte*)cast(void*)&this)[0..bodyLength+2]);//+2 for the partial head (length has not been added yet)
+					void components(ComponentType[] data) {
+						byteTail = data.to!(ubyte[]);
 					}
 				}
-				/**	Initialize Msg with componentNum
-				*/
-				static if (componentType!=ComponentType.other) this(ubyte componentNum) {
-					this.component = componentNum;
-				}
-				/**	Create msg with a network streamed byte data
-				*/
-				this(ubyte[] data) {
-					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
-						ComponentType[] cmpnts = data[this.bodyLength..$].cst!(ComponentType[]);
-						this =	*(	(	data[1..bodyLength]
-									~cmpnts.cst!(ubyte[])
-								)
-								.ptr
-								.cst!(void*)
-								.cst!(typeof(this)*)	
-							);
+			}
+
+			//---Consructors.
+			public {
+				this () {
+					byteHeadPartial[1] = msgType;
+					static if (componentType == ComponentType.other) {
+						byteHeadPartial[0] = ubyte.max;
 					}
-					else {
-						this =	*(	data
-								[1..$]
-								.ptr
-								.cst!(void*)
-								.cst!(typeof(this)*)
-							);
-					}
-					assert(this.type == msgType);
-					assert(data[0] == length);
 				}
-				/**	The length of the main body of the msg.
-					This length is the length of the non dyamic tail.
-					The msg tail is the part of some msgs that changes length depending on the amount of space needed (e.g. a dynamic array of something).
-				*/
-				static ubyte bodyLength() {
-					ubyte calc() {
-						import std.traits	: Fields;
-						import std.meta	: AliasSeq;
-						if (!__ctfe) { assert(false); }
-						alias Types = Fields!(typeof(this));
-						uint size;
-						foreach (T; Types) {
-							size+=T.sizeof;
+				this (ubyte componentNum) {
+					byteHeadPartial[1] = msgType	;
+					byteHeadPartial[0] = componentNum	;
+				}
+				this (ubyte[] data) {
+					byteHeadPartial = data[1..3];
+					byteBody = data[3..3+bodyLength];
+					assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
+				}
+			}
+
+			//---Other methods and properties
+			public {
+				@property {
+					static ubyte bodyLength() {
+						return calcBodyLength!ValueBodyData;
+					}
+					ubyte tailLength() {
+						assert(bodyLength+byteTail.length <= ubyte.max, "Msg to long!");
+						return byteTail.length.cst!ubyte;
+					}
+					ubyte contentLength() {//head+tail
+						assert(bodyLength+tailLength <= ubyte.max, "Msg to long!");
+						return bodyLength+tailLength & 0xFF;
+					}
+					override {
+						ubyte length(){
+							return 3+contentLength & 0xFF;
 						}
-						return size.cst!ubyte;
-					}
-					
-					enum baseSize = calc;
-					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
-						return baseSize-2-components.sizeof;
-					}
-					else {
-						return baseSize-2;
-					}
-				}
-				/**	The total length of the message with its dynamic tail.
-				*/
-				ubyte length() {
-					static if (stc && componentType==ComponentType.other && msgType==Type.components) {
-						return bodyLength+components.length.cst!ubyte&0xff;
-					}
-					else {
-						return bodyLength;
+						ubyte[] byteData() {
+							return contentLength~byteHeadPartial~byteBody~byteTail;
+						}
 					}
 				}
 			}
 		}
-		
+
+
+
+
+
 
 		//---Aliases for easier use of template.
 		static if (cts) {
@@ -186,38 +169,43 @@ template Messages(MsgDirection msgDirection) {
 				alias Components	= Msg!(Type.components)	;
 			}
 		}
-		
+		//---
+
 	}
+
+
+
+
+
+
+	/**	Base msg class
+	*/
+	abstract class Msg {
+		ubyte[2]	byteHeadPartial;
+		
+		//---Always values
+		@property {
+			abstract {
+				ubyte	component	();
+				ubyte	length();
+				ubyte[]	byteData();
+			}
+		}
+	}
+
+
+
+
+
 	//---Aliases for easier use of template.
-	mixin ComponentMsg!(ComponentType.radar)	RadarMsg	;
-	mixin ComponentMsg!(ComponentType.thruster)	ThrusterMsg	;
-	
-	mixin ComponentMsg!(ComponentType.other)	OtherMsg	;
-	
+	alias RadarMsg	= ComponentMsg!(ComponentType.radar)	;
+	alias ThrusterMsg	= ComponentMsg!(ComponentType.thruster)	;
+	alias OtherMsg	= ComponentMsg!(ComponentType.other)	;
+
 }
 //---Aliases for easier use of template.
-mixin Messages!(MsgDir.cts)	Cts	;
-mixin Messages!(MsgDir.stc)	Stc	;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+alias Cts	= Messages!(MsgDir.cts)	;
+alias Stc	= Messages!(MsgDir.stc)	;
 
 
 

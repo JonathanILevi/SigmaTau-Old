@@ -6,6 +6,8 @@ The `Ship` class is mostly data references without much actual functionallity.
 The `Ship` class also has the main event loop. (for now at least)
 */
 
+module ship;
+
 import std.stdio;
 
 import cst_;
@@ -13,6 +15,7 @@ import cst_;
 import console_network.message;
 
 import console;
+////import entity.entities;
 
 import components.component;
 
@@ -42,6 +45,8 @@ class Ship : ShipNetworkCallbackInterface {
 	//---components
 	public {
 		Component[] components;
+		
+		////Entities entities;
 	}
 	
 	
@@ -82,12 +87,13 @@ class Ship : ShipNetworkCallbackInterface {
 		}
 		
 		void on_getComponents(Cts.OtherMsg.GetComponents msg, Console sender) {
-			Stc.OtherMsg.Components res;//response
+			Stc.OtherMsg.Components res = new Stc.OtherMsg.Components;//response
 			this.components.writeln;
-			
+
 			import std.conv : to;
 			this.components.to!(ComponentType[]).writeln;
 			res.components = this.components.to!(ComponentType[]);
+			res.byteData.writeln;
 			sender.send(res);
 			"getComponents".writeln;
 		}

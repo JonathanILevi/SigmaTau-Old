@@ -19,13 +19,13 @@ alias ConponentNetworkCallbackInterface = networking.Component;
 
 
 abstract class Component : ConponentNetworkCallbackInterface {
-	this () {
-		
-	}
 	abstract ComponentType type() @property;
+	override abstract void newMsg(Cts.Msg msg, Console console);
 	ComponentType opCast(T:ComponentType)() {
 		return this.type;
 	}
+	
+	void update() {};
 }
 
 
