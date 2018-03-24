@@ -6,6 +6,8 @@ MsgQueue assumes that the first byte of a msg is the mesages length + 3(for msg 
 
 module msg_queue	;
 
+import cst_;
+
 import queue	;
 import core.thread	;
 import std.socket	;
@@ -33,13 +35,27 @@ class MsgQueue {
 	
 	auto empty()	{ return queue.empty	;	}
 	auto popFront()	{ return queue.popFront	;	}
-	auto front()	{ return queue.front	;	}
-	
+	auto front()	{ return queue.front	;	}	
+}
+
+
+// If msg length is less than three the msg is from the msgThread to the network handler
+private enum MsgThreadMsgType : ubyte {
+	closed	,
 }
 
 
 
 private class MsgThread : Thread {
+	private:
+
+	public this(Socket socket, Queue!(ubyte[]) queue) {
+		this.socket	= socket	;
+		this.queue	= queue	;
+
+		super(&run);
+	}
+	
 	Socket	socket	;
 	Queue!(ubyte[])	queue	;
 			
@@ -47,24 +63,14 @@ private class MsgThread : Thread {
 	ubyte[]	partialMsg	;
 	uint	readLength	;// The current length of the read data.
 	
-	
-	this(Socket socket, Queue!(ubyte[]) queue) {
-		this.socket	= socket	;
-		this.queue	= queue	;
-		
-		super(&run);
-	}
-	
-	
 	private void run() {
 		while (true) {
 			import core.time : msecs;
 			Thread.sleep(msecs(60));
 
 			ptrdiff_t length = socket.receive(buffer[readLength..$]);
-			if (length == Socket.ERROR) {
-				import std.stdio;
-				"error".writeln;
+			if (length==0 || length==Socket.ERROR) {
+				queue.put([MsgThreadMsgType.closed.cst!ubyte]);
 				continue;
 			}
 			////readLength += length;
