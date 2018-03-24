@@ -7,6 +7,7 @@ Consoles are identified by the the class pointer itself so it has no special id.
 module console;
 
 import msg_queue;
+public import msg_queue : MsgThreadMsgType;
 import std.socket;
 
 class Console {

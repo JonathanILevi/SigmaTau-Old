@@ -80,9 +80,22 @@ class Networking {
 				ship.on_consoleConnected(consoles[$-1]);
 			}
 		}
-		foreach(console; consoles) {
+		foreach_reverse(consoleIndex, console; consoles) {
 
 			foreach (msgData; console.msgQueue) {
+				// Msg from msgThread
+				if (msgData.length < 3) {
+					if (msgData[0] == MsgThreadMsgType.closed) {
+						import std.algorithm.mutation : remove;
+						ship.on_consoleDisconnected(console);
+						consoles = consoles.remove(consoleIndex);
+						continue;
+					}
+					else {
+						assert(0, "Unknown msgThreadMsg.");
+					}
+				}
+				// Normal msg
 				with (Cts) {
 					/*cNum == msgData[1]*/pragma(inline, true)ubyte cNum() @property { return msgData[1]; }// componentNum
 					/*msgType == msgData[2]*/pragma(inline, true) ubyte msgType() @property { return msgData[2]; }
