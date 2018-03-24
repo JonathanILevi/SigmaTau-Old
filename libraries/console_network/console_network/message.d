@@ -83,7 +83,7 @@ template Messages(MsgDirection msgDirection) {
 					return 3+bodyLength & 0xFF;
 				}
 				ubyte[] byteData() {
-					return length~byteHeadPartial~byteBody;
+					return bodyLength~byteHeadPartial~byteBody;
 				}
 			}
 		}
