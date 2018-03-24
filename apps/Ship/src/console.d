@@ -3,6 +3,9 @@ A class for a console.
 
 Consoles are identified by the the class pointer itself so it has no special id. 
 */
+
+module console;
+
 import msg_queue;
 import std.socket;
 

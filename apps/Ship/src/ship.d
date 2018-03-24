@@ -6,6 +6,8 @@ The `Ship` class is mostly data references without much actual functionallity.
 The `Ship` class also has the main event loop. (for now at least)
 */
 
+module ship;
+
 import std.stdio;
 
 import cst_;
