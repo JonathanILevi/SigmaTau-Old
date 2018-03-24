@@ -50,47 +50,89 @@ template Messages(MsgDirection msgDirection) {
 			This class is not required for a console to work, but is convenient to deal with the network messages.
 		*/
 		class Msg(Type msgType) : Messages!msgDirection.Msg {
-			mixin("private alias ValueBodyData = "~(cts?"Cts":"Stc")~componentType.to!string.toUpperFirst~"MsgBody"~msgType.to!string.toUpperFirst~";");
-
-			ubyte[calcBodyLength!ValueBodyData()] byteBody;
-
-
-			Type type	() {	assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
-					return byteHeadPartial[1].cst!(Type)	;}
-
-			static foreach(Value; ValueBodyData.Values) {
-				@property {
+			//---`alias`s to CT data of what this msg data is.
+			private {
+				mixin("alias ValueBodyData = "~(cts?"Cts":"Stc")~componentType.to!string.toUpperFirst~"MsgBody"~msgType.to!string.toUpperFirst~";");
+				mixin("alias hasTail = "~(cts?"Cts":"Stc")~componentType.to!string.toUpperFirst~"MsgHasTail"~msgType.to!string.toUpperFirst~";");
+			}
+			
+			//---Actual data of class
+			public {
+				//ubyte[2] byteHeadPartial; // In base class.
+				ubyte[calcBodyLength!ValueBodyData()] byteBody;
+				static if (hasTail) 
+					ubyte[] byteTail;
+				else
+					enum ubyte[] byteTail = [];
+			}
+				
+			//---Value accessors.
+			@property {
+				override ubyte component	() {	static if (componentType == ComponentType.other) assert(byteHeadPartial[1]==ubyte.max, "For `other` type msgs component must be ubyte.max.")	;
+						return byteHeadPartial[0]	;}
+				Type type	() {	assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match.")	;
+						return byteHeadPartial[1].cst!(Type)	;}
+				
+				// Mixin getters and setters for other (msg specific) values.
+				static foreach(Value; ValueBodyData.Values) {
 					mixin("Value.Type "~Value.name~"(){ return *((&byteBody[offset!ValueBodyData(Value.name)]).cst!(void*).cst!(Value.Type*));}");
 					mixin("void "~Value.name~"(Value.Type value){ *((&byteBody[offset!ValueBodyData(Value.name)]).cst!(void*).cst!(Value.Type*)) = value;}");
 				}
 			}
-
-			this () {
-				byteHeadPartial[1] = msgType;
-				static if (componentType == ComponentType.other) {
-					byteHeadPartial[0] = ubyte.max;
+			//---Tail accessors
+			@property {
+				static if (stc && componentType==ComponentType.other && msgType==Type.components) {
+					import std.conv : to;
+					ComponentType[] components() {
+						return byteTail.to!(ComponentType[]);
+					}
+					void components(ComponentType[] data) {
+						byteTail = data.to!(ubyte[]);
+					}
 				}
 			}
-			this (ubyte componentNum) {
-				byteHeadPartial[1] = msgType	;
-				byteHeadPartial[0] = componentNum	;
-			}
-			this (ubyte[] data) {
-				byteHeadPartial = data[1..3];
-				byteBody = data[3..3+bodyLength];
-				assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
-			}
 
-
-			@property static ubyte bodyLength() {
-				return calcBodyLength!ValueBodyData;
-			}
-			override @property {
-				ubyte length(){
-					return 3+bodyLength & 0xFF;
+			//---Consructors.
+			public {
+				this () {
+					byteHeadPartial[1] = msgType;
+					static if (componentType == ComponentType.other) {
+						byteHeadPartial[0] = ubyte.max;
+					}
 				}
-				ubyte[] byteData() {
-					return bodyLength~byteHeadPartial~byteBody;
+				this (ubyte componentNum) {
+					byteHeadPartial[1] = msgType	;
+					byteHeadPartial[0] = componentNum	;
+				}
+				this (ubyte[] data) {
+					byteHeadPartial = data[1..3];
+					byteBody = data[3..3+bodyLength];
+					assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
+				}
+			}
+
+			//---Other methods and properties
+			public {
+				@property {
+					static ubyte bodyLength() {
+						return calcBodyLength!ValueBodyData;
+					}
+					ubyte tailLength() {
+						assert(bodyLength+byteTail.length <= ubyte.max, "Msg to long!");
+						return byteTail.length.cst!ubyte;
+					}
+					ubyte contentLength() {//head+tail
+						assert(bodyLength+tailLength <= ubyte.max, "Msg to long!");
+						return bodyLength+tailLength & 0xFF;
+					}
+					override {
+						ubyte length(){
+							return 3+contentLength & 0xFF;
+						}
+						ubyte[] byteData() {
+							return contentLength~byteHeadPartial~byteBody~byteTail;
+						}
+					}
 				}
 			}
 		}
@@ -143,8 +185,8 @@ template Messages(MsgDirection msgDirection) {
 		
 		//---Always values
 		@property {
-			ubyte component	() {	return byteHeadPartial[0]	;}
 			abstract {
+				ubyte	component	();
 				ubyte	length();
 				ubyte[]	byteData();
 			}
