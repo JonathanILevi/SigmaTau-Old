@@ -30,7 +30,9 @@ class Console {
 		
 		msgQueue = new MsgQueue(socket);
 		
-		Cts.OtherMsg.GetComponents msg;
+		Cts.OtherMsg.GetComponents msg = new Cts.OtherMsg.GetComponents;
+		
+		msg.byteData.writeln;
 
 		socket.send(msg.byteData);
 		
@@ -60,7 +62,7 @@ class Console {
 						import std.range	;
 						ubyte radarNum = shipComponents.countUntil(ComponentType.radar).cst!ubyte;
 						if (radarNum>=0){
-							socket.send(Cts.RadarMsg.Read(radarNum).byteData);
+							socket.send((new Cts.RadarMsg.Read(radarNum)).byteData);
 						}
 					}
 				}
