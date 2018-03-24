@@ -65,10 +65,17 @@ template Messages(MsgDirection msgDirection) {
 				}
 			}
 
-			this() {
+			this () {
 				byteHeadPartial[1] = msgType;
+				static if (componentType == ComponentType.other) {
+					byteHeadPartial[0] = ubyte.max;
+				}
 			}
-			this(ubyte[] data) {
+			this (ubyte componentNum) {
+				byteHeadPartial[1] = msgType	;
+				byteHeadPartial[0] = componentNum	;
+			}
+			this (ubyte[] data) {
 				byteHeadPartial = data[1..3];
 				byteBody = data[3..3+bodyLength];
 				assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
