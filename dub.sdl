@@ -6,24 +6,95 @@ license	"MIT"
 
 targetType	"none"
 
-subPackage "./apps/console/"
-subPackage "./apps/ship/"
+subPackage {
+	name	"console"
+	description	"Console"
+	authors	"Jonathan Levi"
+	copyright	"Copyright © 2018, Jonathan Levi"
+	license	"MIT"
+	
+	sourcePaths	"apps/console/src"
+	importPaths	"apps/console/src"
+
+	dependency	"cst"	version="~>1.0.4"
+	dependency	"xyz"	version="~>1.1.0"
+	dependency	"socket-msg-queue"	version="~>1.0.0"
+
+	dependency	"sigmatau:console_network"	version="*"
+}
+subPackage {
+	name	"ship"
+	description	"Ship"
+	authors	"Jonathan Levi"
+	copyright	"Copyright © 2018, Jonathan Levi"
+	license	"MIT"
+	
+	sourcePaths	"apps/ship/src"
+	importPaths	"apps/ship/src"
+
+	dependency	"cst"	version="~>1.0.4"
+	dependency	"xyz"	version="~>1.1.0"
+
+	dependency	"queue"	version="~>1.0.0"
+
+	dependency	"sigmatau:console_network"	version="*"
+
+	dependency	"sigmatau:ship-console"	version="*"
+	dependency	"sigmatau:ship-components"	version="*"
+	dependency	"sigmatau:ship-networking"	version="*"
+
+	workingDirectory	"built"
+	targetPath	"built"
+}
+
 subPackage {
 	name	"console_network"
 	targetType	"library"
-	sourcePaths	"libraries/console_network"
-	importPaths	"libraries/console_network"
+	sourcePaths	"libraries/console_network/"
+	importPaths	"libraries/console_network/"
+	
 	dependency	"cst"	version="~>1.0.4"
+	
 	workingDirectory	"built"
 	targetPath	"built"
 }
 subPackage {
-	name	"msg_queue"
+	name	"ship-console"
 	targetType	"library"
-	sourcePaths	"libraries/msg_queue"
-	importPaths	"libraries/msg_queue"
-	dependency	"queue"	version="~>1.0.0"
+	sourcePaths	"apps/ship/packages/console"
+	importPaths	"apps/ship/packages/console"
+	
 	dependency	"cst"	version="~>1.0.4"
+	
 	workingDirectory	"built"
 	targetPath	"built"
 }
+subPackage {
+	name	"ship-networking"
+	targetType	"library"
+	sourcePaths	"apps/ship/packages/networking"
+	importPaths	"apps/ship/packages/networking"
+	
+	dependency	"cst"	version="~>1.0.4"
+	dependency	"socket-msg-queue"	version="~>1.0.0"
+	dependency	"sigmatau:console_network"	version="*"
+	dependency	"sigmatau:ship-console"	version="*"
+	
+	workingDirectory	"built"
+	targetPath	"built"
+}
+subPackage {
+	name	"ship-components"
+	targetType	"library"
+	sourcePaths	"apps/ship/packages/components"
+	importPaths	"apps/ship/packages/components"
+	
+	dependency	"cst"	version="~>1.0.4"
+	dependency	"queue"	version="~>1.0.0"
+	dependency	"sigmatau:console_network"	version="*"
+	dependency	"sigmatau:ship-console"	version="*"
+	
+	workingDirectory	"built"
+	targetPath	"built"
+}
+

@@ -1,7 +1,7 @@
 /*
 The `radar` component.
 */
-module components.thruster;
+module components.components.thruster;
 
 
 import std.stdio;
@@ -14,8 +14,6 @@ import console;
 
 import components.component;
 
-import	networking	;
-
 
 
 class Thruster : Component {
@@ -25,7 +23,7 @@ class Thruster : Component {
 
 	}
 	
-	override void newMsg(Cts.Msg msg, Console console) {
+	override void onMsg(Cts.Msg msg, Console console) {
 		msg.writeln;
 	}
 }

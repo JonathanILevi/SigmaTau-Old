@@ -15,27 +15,28 @@ import cst_;
 import console_network.message;
 
 import console;
+import console_send;
 ////import entity.entities;
 
 import components.component;
 
-import	networking	;
-static import	networking.ship	;
-alias ShipNetworkCallbackInterface = networking.Ship;
+import networking;
 
 
 
-
-class Ship : ShipNetworkCallbackInterface {
+class Ship {
 	
 	this (string ip) {
 		addComponent!(ComponentType.radar)();
 		addComponent!(ComponentType.thruster)();
 		addComponent!(ComponentType.thruster)();
 		
-		static import	networking.components	;
 		import std.conv : to;
-		this.networking = new Networking(this.cst!ShipNetworkCallbackInterface, this.components.to!(networking.Component[]), ip);
+		this.networking = new Networking	(	ip	,
+				this.components.to!(ComponentType[])	,
+				&onConsoleConnected	,
+				&onConsoleDisconnected	,
+				&onMsg	,);
 		mainLoop;
 	}
 	
@@ -69,7 +70,7 @@ class Ship : ShipNetworkCallbackInterface {
 	*/
 	private void addComponent(ComponentType componentType)() {
 		with (ComponentType) {
-			import components;
+			import components.components;
 			static if	(componentType == radar	) {	this.components ~= new Radar	()	;}
 			else if	(componentType == thruster	) {	this.components ~= new Thruster	()	;}
 		}
@@ -77,16 +78,33 @@ class Ship : ShipNetworkCallbackInterface {
 	}
 	
 	
-	//---ShipNetworkCallbackInterface callbacks
+	//---Networking callbacks
 	public {
-		void on_consoleConnected(Console console) {
+		void onConsoleConnected(Console console) {
 			"console connected".writeln;
 		}
-		void on_consoleDisconnected(Console console) {
-			"console disconnenctid".writeln;
+		void onConsoleDisconnected(Console console) {
+			"console disconnencted".writeln;
 		}
-		
-		void on_getComponents(Cts.OtherMsg.GetComponents msg, Console sender) {
+		void onMsg(Cts.Msg msg, Console sender) {
+			msg.writeln;
+			if (msg.component == ubyte.max) {
+				if (msg.type == Cts.OtherMsg.Type.getComponents) {
+					onGetComponents(msg.cst!(Cts.OtherMsg.GetComponents), sender);
+				}
+				else {
+					assert(false, "Unknown msg type for \"other\" component." );
+				}
+			}
+			else {
+				components[msg.component].onMsg(msg, sender);
+			}
+		}
+	}
+	
+	//---Msgs for "other" component
+	public {
+		void onGetComponents(Cts.OtherMsg.GetComponents msg, Console sender) {
 			Stc.OtherMsg.Components res = new Stc.OtherMsg.Components;//response
 			this.components.writeln;
 

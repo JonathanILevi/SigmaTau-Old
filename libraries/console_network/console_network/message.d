@@ -68,10 +68,11 @@ template Messages(MsgDirection msgDirection) {
 				
 			//---Value accessors.
 			@property {
-				override ubyte component	() {	static if (componentType == ComponentType.other) assert(byteHeadPartial[1]==ubyte.max, "For `other` type msgs component must be ubyte.max.")	;
+				override ubyte component	() {	static if (componentType == ComponentType.other) assert(byteHeadPartial[0]==ubyte.max, "For `other` type msgs component must be ubyte.max.")	;
 						return byteHeadPartial[0]	;}
 				Type type	() {	assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match.")	;
 						return byteHeadPartial[1].cst!(Type)	;}
+				alias type = Messages!msgDirection.Msg.type;
 				
 				// Mixin getters and setters for other (msg specific) values.
 				static foreach(Value; ValueBodyData.Values) {
@@ -107,6 +108,7 @@ template Messages(MsgDirection msgDirection) {
 				this (ubyte[] data) {
 					byteHeadPartial = data[1..3];
 					byteBody = data[3..3+bodyLength];
+					static if (componentType == ComponentType.other) assert(byteHeadPartial[0]==ubyte.max, "For `other` type msgs component must be ubyte.max.");
 					assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
 				}
 			}
@@ -185,6 +187,9 @@ template Messages(MsgDirection msgDirection) {
 		
 		//---Always values
 		@property {
+			ubyte type() {
+				return byteHeadPartial[1];
+			}
 			abstract {
 				ubyte	component	();
 				ubyte	length();

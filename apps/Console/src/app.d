@@ -6,7 +6,7 @@ import std.stdio;
 
 import std.socket;
 
-import msg_queue	;
+import socket_msg_queue	;
 import console_network.message	;
 
 
@@ -20,7 +20,7 @@ void main() {
 
 class Console {
 	Socket socket;
-	MsgQueue msgQueue;
+	SocketMsgQueue msgQueue;
 	ComponentType[] shipComponents;
 
 
@@ -28,7 +28,7 @@ class Console {
 		socket = new TcpSocket();
 		socket.connect(parseAddress("127.0.0.1",128));
 		
-		msgQueue = new MsgQueue(socket);
+		msgQueue = new SocketMsgQueue(socket, a=>a[0]+3);
 		
 		Cts.OtherMsg.GetComponents msg = new Cts.OtherMsg.GetComponents;
 		
