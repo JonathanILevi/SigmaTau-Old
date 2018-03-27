@@ -81,7 +81,6 @@ class Networking {
 			}
 		}
 		foreach_reverse(consoleIndex, console; consoles) {
-
 			foreach (msgData; console.msgQueue) {
 				// Msg from msgThread
 				if (msgData.length < 3) {
