@@ -108,6 +108,7 @@ template Messages(MsgDirection msgDirection) {
 				this (ubyte[] data) {
 					byteHeadPartial = data[1..3];
 					byteBody = data[3..3+bodyLength];
+					static if (componentType == ComponentType.other) assert(byteHeadPartial[0]==ubyte.max, "For `other` type msgs component must be ubyte.max.");
 					assert(msgType==byteHeadPartial[1], "class msg type and `byteData` msg type do not match")	;
 				}
 			}
@@ -186,6 +187,9 @@ template Messages(MsgDirection msgDirection) {
 		
 		//---Always values
 		@property {
+			ubyte type() {
+				return byteHeadPartial[1];
+			}
 			abstract {
 				ubyte	component	();
 				ubyte	length();
