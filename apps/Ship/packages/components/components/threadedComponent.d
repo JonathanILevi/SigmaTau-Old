@@ -16,8 +16,6 @@ import console_network.message;
 
 import console;
 
-import networking	;
-
 
 
 struct QueueMsg {
@@ -28,7 +26,7 @@ struct QueueMsg {
 abstract class ThreadedComponent : Component {
 	abstract override ComponentType type() @property;
 
-	override void newMsg(Cts.Msg msg, Console console) {
+	override void onMsg(Cts.Msg msg, Console console) {
 		msgQueue.put(QueueMsg(msg,console));
 	}
 	protected Queue!(QueueMsg) msgQueue = new Queue!(QueueMsg);

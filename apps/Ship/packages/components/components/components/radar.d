@@ -1,7 +1,7 @@
 /*
 The `radar` component.
 */
-module components.radar;
+module components.components.radar;
 
 
 import std.stdio;
@@ -17,8 +17,6 @@ import console_network.message;
 import console;
 
 import components.threadedComponent;
-
-import	networking	;
 
 
 
