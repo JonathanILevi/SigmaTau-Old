@@ -42,6 +42,7 @@ subPackage {
 	dependency	"sigmatau:ship-console"	version="*"
 	dependency	"sigmatau:ship-components"	version="*"
 	dependency	"sigmatau:ship-networking"	version="*"
+	dependency	"sigmatau:ship-entity"	version="*"
 
 	workingDirectory	"built"
 	targetPath	"built"
@@ -97,4 +98,14 @@ subPackage {
 	workingDirectory	"built"
 	targetPath	"built"
 }
-
+subPackage {
+	name	"ship-entity"
+	targetType	"library"
+	sourcePaths	"apps/ship/packages/entity"
+	importPaths	"apps/ship/packages/entity"
+	
+	dependency	"cst"	version="~>1.0.4"
+	
+	workingDirectory	"built"
+	targetPath	"built"
+}
