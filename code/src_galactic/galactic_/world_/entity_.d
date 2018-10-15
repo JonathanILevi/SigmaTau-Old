@@ -28,6 +28,9 @@ class Entity {
 			
 	ushort	id	;
 	
+	import galactic_.game_logic_.controller_:Controller;
+	Controller controller = null;
+	
 	static ushort nextId;
 }
 
