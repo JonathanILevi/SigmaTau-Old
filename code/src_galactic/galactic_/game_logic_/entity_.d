@@ -1,4 +1,4 @@
-module galactic_.world_.entity_;
+module galactic_.game_logic_.entity_;
 
 import std.experimental.logger;
 import cst_;

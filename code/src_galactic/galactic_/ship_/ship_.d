@@ -6,13 +6,13 @@ import cst_;
 import loose_.sleep_;
 import core.time;
 
-import galactic_.world_	.world_	:	World	;
+////import galactic_.world_	.world_	:	World	;
 import galactic_.network_	.network_	:	Network	;
 
 import std.algorithm.iteration	;
 import std.range	:	array	;
 
-class Ship {
+class Ship(World) {
 	this(World world, Network network) {
 		this.world	= world	;
 		this.network	= network	;

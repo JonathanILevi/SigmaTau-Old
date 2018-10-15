@@ -3,12 +3,12 @@ module galactic_.game_logic_.game_logic_;
 import std.experimental.logger;
 import cst_;
 
-import galactic_.world_	.entity_;
-import galactic_.world_	.world_;
+import galactic_.game_logic_	.entity_;
+import galactic_.game_logic_	.world_;
 
 class GameLogic {
-	this(World world) {
-		this.world	= world	;
+	this() {
+		this.world	= new World	;
 	}
 	void update() {
 		world.entities.length.log;
@@ -25,6 +25,7 @@ class GameLogic {
 			entity.ori	+= entity.anv	;
 		}
 	}
+	World getWorld() {return world;}
 	private {
 		World world;
 		
