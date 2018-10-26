@@ -1,6 +1,8 @@
 module terminal_msg_.protocol_;
 import commonImports;
 
+import loose_	.serialize_	;
+
 public {
 	struct State {
 		ubyte id;
@@ -53,24 +55,13 @@ mixin template EntityTemplate() {
 private mixin template MsgsTemplate() {
 	const(ubyte)[][] getUpdateMsg() {
 		import std.traits;
-		static foreach (id; 0..256) {
+		static foreach (ubyte id; 0..256) {
 			static if (hasUDA!(this,State(id))) {
 				alias changed = __traits(getMember,getSymbolsByUDA!(this,StateChanged(id))[0])
 				if (changed) {
-					
+					ubyte[] data = id ~ __traits(getMember,this, mem).serialize!(State(id));
+					changed = false;
 				}
-				foreach (mem; getSymbolsByUDA!(this,State))) {
-					if (hasUDA!(__traits(getMember, this, mem), State)) {
-						alias id = getUDAs!(this,State)[0];
-						
-					}
-				}
-			}
-		}
-		foreach (mem; getSymbolsByUDA!(this,State))) {
-			if (hasUDA!(__traits(getMember, this, mem), State)) {
-				alias id = getUDAs!(this,State)[0];
-				
 			}
 		}
 	}
@@ -96,7 +87,6 @@ mixin template MetaRadarTemplate(Entity) {
 		_entities	= _entities.remove(_entities.countUntil(entity))	;
 		_removed	~= entity	;
 	}
-	
 }
 mixin template MetaMoveTemplate() {
 	@State(0) @Settable(0) {
