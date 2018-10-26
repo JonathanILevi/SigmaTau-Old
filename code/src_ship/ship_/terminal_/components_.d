@@ -1,235 +1,162 @@
 module ship_.terminal_.components_;
 import commonImports;
 
-import std.range;
-
-static import terminal_msg_.up_;
-
-import ship_.world_	.world_	;
-import ship_.world_	.entity_	;
-import ship_.terminal_	.terminal_network_	:	TerminalNetwork	;
-
 public import terminal_msg_	.component_type_	:	ComponentType	;
 
+import terminal_msg_	.protocol_;
+import ship_.world_	.world_	;
+import ship_.world_	.entity_	;
+
+
+/*	Interface for ship used in `FunctionComponent`s
+*/
+interface Ship {
+	
+}
+
+/*	
+*/
+class MetaEntity {
+	mixin EntityTemplate;
+	this(Entity worldEntity) {
+		this.worldEntity	= worldEntity	;
+		update();
+	}
+	void update() {
+		pos	= worldEntity.pos	;
+		ori	= worldEntity.ori	;
+	}
+	Entity	worldEntity	;
+	@property bool inWorld() {
+		return worldEntity.inWorld; 
+	}
+}
+
+
+/*	Base Component Type
+*/
 abstract class Component {
-	this(ubyte id, World world, Component[] delegate(ComponentType) getComponent) {
-		this.id	= id	;
-		this.world	= world	;
-		this.getComponent	= getComponent	;
-	}
 	abstract @property ComponentType type();
-	ComponentType opCast(T:ComponentType)() {
-		return type;
+	
+	this(ubyte id) {
+		this.id 	= id	;
 	}
-	abstract void update();
-	abstract void onMsg(terminal_msg_.up_.UnknownMsg, TerminalNetwork from);
-	private {
+	void networkUpdate() {
+	}
+	void update() {
+		
+	}
+	public {
 		ubyte	id	;
+	}
+	private {
+	}
+}
+/*	Base for Function Components
+	    Function Components are components that talk to the meta game data about the world
+	and convert it to the gameplay info that the terminals are locked to.  e.g. The terminal 
+	code will never know their "meta game" location (the location the game logic uses); in game location
+	in Sigma Tau is purely relative.
+*/
+abstract class FunctionComponent : Component {
+	this(World world, Ship ship, ubyte id) {
+		super(id);
+		this.world	= world	;
+		this.ship	= ship	;
+	}
+	override {
+		final void networkUpdate() {
+			updateFromGalactic();
+			super.networkUpdate();
+		}
+		final void update() {}
+	}
+	abstract void updateFromGalactic();
+	
+	private {
 		World	world	;
-		Component[] delegate(ComponentType)	getComponent	;
+		Ship	ship	;
 	}
 }
-
-class MetaRadar : Component {
-	this(ubyte id, World world, Component[] delegate(ComponentType) getComponent) {
-		super(id, world, getComponent);
+/*	Base for Logic Components
+	    Logic Components are components that do calculations purely through knowledge of other
+	components.  Things like autopilot.
+*/
+abstract class LogicComponent : Component {
+	this(ComponentType[ubyte] componentTypes, Component delegate(ubyte id) getComponent_callback, ubyte id) {
+		super(id);
+		this.componentTypes	= componentTypes	;
+		this.getComponent_callback	= getComponent_callback	;
 	}
-	override @property ComponentType type() {
-		return ComponentType.metaRadar;
+	override {
+		final void networkUpdate() {
+			super.networkUpdate;
+		}
+		void update() {
+			super.update();
+		}
 	}
-	override void update() {
-		/*	// This comment is mostly copied from the galactic `galactic_.network_.ship_`.
-			Here we send msgs to the terminal to update its world.
-			This does not get updated when entities get added or removed.
-				I chose not to have msgs sent because it was causing to much
-				spider webed communication.  The world logic needs to be able
-				to work without thinking about networking.
-			The world.entities garantees that entities added will be added to
-				the end, thus garanteeing that world.entities will not get reordered.
-				Entities also have a `inWorld` property that gets set to false when
-				it is removed.
-			We keep an array of what the ship client sees (and the ids attached
-				each entity).  (`syncedEntities` and `entityIds`)
-			This allows a great algorithm which avoids exesive recursions of
-				either array.  We can loop through our array updating the client
-				while checking if the entity is remove.  We then know that the
-				entities we have are in world.entities and we also know they are
-				in the same order and at the beginning.  Thus, any entity in
-				`world.entities` after our last entity is a new entity.
-		*/
-		import terminal_msg_.down_meta_radar_;
-		//---Update entities synced with cliend (update/remove)
-		foreach_reverse (i, entity; syncedEntities) {
-			if (!entity.getInWorld) {
-				//---Send Remove Msg to client
-				{
-					auto msg = RemoveMsg(this.id);
-					msg.id	= entityIds[i]	;
-					streamers.sendAll(msg);
+	private {
+		ComponentType[ubyte]	componentTypes	;
+		Component delegate(ubyte id)	getComponent_callback	;
+		
+		Component getComponent(ubyte id) {
+			return getComponent_callback(id);
+		}
+	}
+}
+/*	
+*/
+class MetaRadar : FunctionComponent {
+	override @property ComponentType type() { return ComponentType.metaRadar; }
+	mixin MetaRadarTemplate!MetaEntity;
+	
+	this(World world, Ship ship, ubyte id) {
+		super(world, ship, id);
+	}
+	override {
+		void updateFromGalactic() {
+			//---Update data from galactic
+			{
+				foreach_reverse (i, entity; entities) {
+					if (!entity.inWorld) {
+						removeEntity(entity);
+					}
+					else {
+						entity.update;
+					}
 				}
-				//---Remove reference
-				{
-					syncedEntities	= syncedEntities	.remove(i);
-					entityIds	= entityIds	.remove(i);
+				//---Add new entities
+				Entity[] newEntities =	entities.length>0
+					? world.entities.find(entities[$-1])[1..$]
+					: world.entities;
+				_entities.reserve(entities.length+newEntities.length);
+				foreach (i,entity; newEntities) {
+					addEntity(new MetaEntity(entity));
 				}
 			}
-			else {
-				//---Send Update Msg to client
-				auto msg = UpdateMsg(this.id);
-				msg.id	= entityIds[i]	;
-				msg.pos	= entity.pos	;
-				msg.ori	= entity.ori	;
-				streamers.sendAll(msg);
-			}
-		}
-		//---Add new entities
-		Entity[] newEntities =	syncedEntities.length>0
-			? world.entities.find(syncedEntities[$-1])[1..$]
-			: world.entities;
-		syncedEntities.reserve(syncedEntities.length+newEntities.length);
-		foreach (i,entity; newEntities) {
-			entityIds	~=nextId++	;
-			syncedEntities	~=entity	;
-			//---Send Msg to client
-			auto msg = AddMsg(this.id);
-			msg.id	= entityIds[$-1]	;
-			msg.pos	= entity.pos	;
-			msg.ori	= entity.ori	;
-			streamers.sendAll(msg);
-		}
-		
-		
-		foreach (i, entity; syncedEntities) {
-			assert(entity.getInWorld);
-			auto msg = AddMsg(this.id);
-			msg.id	= entityIds[i]	;
-			msg.pos	= entity.pos	;
-			msg.ori	= entity.ori	;
-			[readers,newStreamers].sendAll(msg);
-		}
-		
-		streamers	~= newStreamers;
-		readers	= [];
-		newStreamers	= [];
-	}
-	override void onMsg(terminal_msg_.up_.UnknownMsg unknownMsg, TerminalNetwork from) {
-		import terminal_msg_.up_meta_radar_;
-		final switch (unknownMsg.type) {
-			case MsgType.read:
-				log("metaRadar msg read:");
-				////auto msg = ReadMsg(unknownMsg);
-				readers ~= from;
-				break;
-			case MsgType.stream:
-				log("metaRadar msg stream:");
-				////auto msg = StreamMsg(unknownMsg);
-				newStreamers ~= from;
-				break;
 		}
 	}
-	
 	private {
-		TerminalNetwork[] readers	= []	;
-		TerminalNetwork[] streamers	= []	;
-		TerminalNetwork[] newStreamers	= []	; // Will be added to streamers once it gets updated.
-		
-		ushort[]	entityIds	= []	;
-		Entity[]	syncedEntities	= []	;
-		ushort	nextId	= 0	;
 	}
 }
-
-
-private {
-	void sendAll(TerminalNetwork[] to, const(ubyte)[] msg) {
-		sendAll([to], msg);
-	}
-	void sendAll(TerminalNetwork[][] to, const(ubyte)[] msg) {
-		foreach (group; to) foreach (network; group) {
-			network.send(msg);
-		}
-	}
-}
-
-
-class MetaMove : Component {
-	this(ubyte id, World world, Component[] delegate(ComponentType) getComponent) {
-		super(id, world, getComponent);
-	}
-	override @property ComponentType type() {
-		return ComponentType.metaMove;
-	}
-	override void update() {
-		foreach (reader; forwardReaders) {
-			sendForwardRead(reader);
-		}
-		foreach (reader; strafeReaders) {
-			sendStrafeRead(reader);
-		}
-		forwardReaders = [];
-		strafeReaders = [];
-		foreach (streamer; forwardStreamers) {
-			sendForwardRead(streamer);
-		}
-		foreach (streamer; strafeStreamers) {
-			sendStrafeRead(streamer);
-		}
-	}
-	override void onMsg(terminal_msg_.up_.UnknownMsg unknownMsg, TerminalNetwork from) {
-		import terminal_msg_.up_meta_move_;
-		final switch (unknownMsg.type) {
-			case MsgType.read:
-				log("metaRadar msg read:");
-				auto msg = ReadMsg(unknownMsg);
-				if (msg.axis == Axis.forward) {
-					forwardReaders ~= from;
-				}
-				else if (msg.axis == Axis.strafe) {
-					strafeReaders ~= from;
-				}
-				break;
-			case MsgType.stream:
-				log("metaRadar msg stream:");
-				auto msg = StreamMsg(unknownMsg);
-				if (msg.axis == Axis.forward) {
-					forwardStreamers ~= from;
-				}
-				else if (msg.axis == Axis.strafe) {
-					strafeStreamers ~= from;
-				}
-				break;
-			case MsgType.set:
-				log("metaRadar msg stream:");
-				auto msg = SetMsg(unknownMsg);
-				msg.value.log;
-				break;
-		}
-	}
+/*	
+*/
+class MetaMove : FunctionComponent {
+	override @property ComponentType type() { return ComponentType.metaMove; }
+	mixin MetaMoveTemplate;
 	
-	private {
-		TerminalNetwork[] forwardReaders	= []	;
-		TerminalNetwork[] forwardStreamers	= []	;
-		TerminalNetwork[] strafeReaders	= []	;
-		TerminalNetwork[] strafeStreamers	= []	;
-		
-		void sendForwardRead(TerminalNetwork to) {
-			import terminal_msg_.down_meta_move_;
-			auto msg = UpdateMsg(this.id);
-			msg.axis	= Axis.forward	;
-			msg.value	= 0	;
-			to.send(msg);
-		}
-		void sendStrafeRead(TerminalNetwork to) {
-			import terminal_msg_.down_meta_move_;
-			auto msg = UpdateMsg(this.id);
-			msg.axis	= Axis.strafe	;
-			msg.value	= 0	;
-			to.send(msg);
+	this(World world, Ship ship, ubyte id) {
+		super(world, ship, id);
+	}
+	override {
+		void updateFromGalactic() {
 		}
 	}
+	private {
+		
+	}
 }
-
-
 
 
 

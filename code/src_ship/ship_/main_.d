@@ -21,8 +21,8 @@ class Main {
 		while (true) {
 			sleep(200.msecs);
 			galacticMgr	.update	( 	);
-			auto msgs = ship	.update	( terminalNetworkMaster.getNewTerminals()	);
-			galacticMgr	.send	( msgs	);
+			ship	.update	( terminalNetworkMaster.getNewTerminals()	);
+			galacticMgr	.send	( new ubyte[][0]	);
 		}
 	}
 }

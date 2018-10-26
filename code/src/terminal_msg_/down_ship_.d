@@ -9,19 +9,20 @@ import terminal_msg_.component_type_;
 public import terminal_msg_.up_;
 
 enum MsgType {
-	components	,
+	newComponent	,
 }
-enum componentType = 255.cst!ComponentType;
+enum msgComponentType = 255.cst!ComponentType;
 
 mixin TypeTemplate;
 
-class ComponentsMsg {
+class NewComponentMsg {
 	@Exclude {
-		enum type = MsgType.components;
+		enum type = MsgType.newComponent;
 		mixin MsgTemplate;
 	}
 	
-	ComponentType[]	components;
+	ubyte	id	;
+	ComponentType	componentType	;
 }
 
 

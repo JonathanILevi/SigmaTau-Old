@@ -11,7 +11,7 @@ public import terminal_msg_.up_;
 enum MsgType {
 	test	,
 }
-enum componentType = 255.cst!ComponentType;
+enum msgComponentType = 255.cst!ComponentType;
 
 mixin TypeTemplate;
 

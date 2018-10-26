@@ -2,7 +2,7 @@ module terminal_msg_.msg_template_;
 import commonImports;
 
 
-mixin template  MsgTemplate(){
+mixin template MsgTemplate(){
 	alias Msg = typeof(this);
 	this(ubyte component=255) {
 		this.component = component;
@@ -21,7 +21,7 @@ mixin template  MsgTemplate(){
 	
 	@property
 	const(ubyte)[] msgData() {
-		static if (componentType!=255) {
+		 static if (msgComponentType!=255) {
 			assert(component!=255);
 		}
 		auto data = this.serialize!(Endian.littleEndian, ubyte);
