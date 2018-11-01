@@ -31,6 +31,7 @@ abstract class Component {
 }
 
 class MetaRadar : Component {
+	import terminal_msg_.meta_radar;
 	this(ubyte id, World world, Component[] delegate(ComponentType) getComponent) {
 		super(id, world, getComponent);
 	}
@@ -57,15 +58,13 @@ class MetaRadar : Component {
 				in the same order and at the beginning.  Thus, any entity in
 				`world.entities` after our last entity is a new entity.
 		*/
-		import terminal_msg_.down_meta_radar_;
+		////import terminal_msg_.down_meta_radar_;
 		//---Update entities synced with cliend (update/remove)
 		foreach_reverse (i, entity; syncedEntities) {
 			if (!entity.getInWorld) {
 				//---Send Remove Msg to client
 				{
-					auto msg = RemoveMsg(this.id);
-					msg.id	= entityIds[i]	;
-					streamers.sendAll(msg);
+					entities.remove(entityIds[i]);
 				}
 				//---Remove reference
 				{
@@ -75,11 +74,9 @@ class MetaRadar : Component {
 			}
 			else {
 				//---Send Update Msg to client
-				auto msg = UpdateMsg(this.id);
-				msg.id	= entityIds[i]	;
-				msg.pos	= entity.pos	;
-				msg.ori	= entity.ori	;
-				streamers.sendAll(msg);
+				entities.change(	entityIds[i]	,
+					entity.pos	,
+					entity.ori	,);
 			}
 		}
 		//---Add new entities
@@ -88,54 +85,41 @@ class MetaRadar : Component {
 			: world.entities;
 		syncedEntities.reserve(syncedEntities.length+newEntities.length);
 		foreach (i,entity; newEntities) {
-			entityIds	~=nextId++	;
 			syncedEntities	~=entity	;
-			//---Send Msg to client
-			auto msg = AddMsg(this.id);
-			msg.id	= entityIds[$-1]	;
-			msg.pos	= entity.pos	;
-			msg.ori	= entity.ori	;
-			streamers.sendAll(msg);
+			entityIds	~=entities.add(	entity.pos	,
+					entity.ori	,);
 		}
 		
-		
-		foreach (i, entity; syncedEntities) {
-			assert(entity.getInWorld);
-			auto msg = AddMsg(this.id);
-			msg.id	= entityIds[i]	;
-			msg.pos	= entity.pos	;
-			msg.ori	= entity.ori	;
-			[readers,newStreamers].sendAll(msg);
-		}
-		
-		streamers	~= newStreamers;
-		readers	= [];
-		newStreamers	= [];
+		////streamers	~= newStreamers;
+		////readers	= [];
+		////newStreamers	= [];
 	}
 	override void onMsg(terminal_msg_.up_.UnknownMsg unknownMsg, TerminalNetwork from) {
-		import terminal_msg_.up_meta_radar_;
-		final switch (unknownMsg.type) {
-			case MsgType.read:
-				log("metaRadar msg read:");
-				////auto msg = ReadMsg(unknownMsg);
-				readers ~= from;
-				break;
-			case MsgType.stream:
-				log("metaRadar msg stream:");
-				////auto msg = StreamMsg(unknownMsg);
-				newStreamers ~= from;
-				break;
-		}
+		////import terminal_msg_.up_meta_radar_;
+		////final switch (unknownMsg.type) {
+		////	case MsgType.read:
+		////		log("metaRadar msg read:");
+		////		////auto msg = ReadMsg(unknownMsg);
+		////		readers ~= from;
+		////		break;
+		////	case MsgType.stream:
+		////		log("metaRadar msg stream:");
+		////		////auto msg = StreamMsg(unknownMsg);
+		////		newStreamers ~= from;
+		////		break;
+		////}
 	}
 	
 	private {
-		TerminalNetwork[] readers	= []	;
-		TerminalNetwork[] streamers	= []	;
-		TerminalNetwork[] newStreamers	= []	; // Will be added to streamers once it gets updated.
+		////TerminalNetwork[] readers	= []	;
+		////TerminalNetwork[] streamers	= []	;
+		////TerminalNetwork[] newStreamers	= []	; // Will be added to streamers once it gets updated.
+		
+		Entities	entities	;
 		
 		ushort[]	entityIds	= []	;
 		Entity[]	syncedEntities	= []	;
-		ushort	nextId	= 0	;
+		////ushort	nextId	= 0	;
 	}
 }
 
@@ -160,72 +144,72 @@ class MetaMove : Component {
 		return ComponentType.metaMove;
 	}
 	override void update() {
-		foreach (reader; forwardReaders) {
-			sendForwardRead(reader);
-		}
-		foreach (reader; strafeReaders) {
-			sendStrafeRead(reader);
-		}
-		forwardReaders = [];
-		strafeReaders = [];
-		foreach (streamer; forwardStreamers) {
-			sendForwardRead(streamer);
-		}
-		foreach (streamer; strafeStreamers) {
-			sendStrafeRead(streamer);
-		}
+		////foreach (reader; forwardReaders) {
+		////	sendForwardRead(reader);
+		////}
+		////foreach (reader; strafeReaders) {
+		////	sendStrafeRead(reader);
+		////}
+		////forwardReaders = [];
+		////strafeReaders = [];
+		////foreach (streamer; forwardStreamers) {
+		////	sendForwardRead(streamer);
+		////}
+		////foreach (streamer; strafeStreamers) {
+		////	sendStrafeRead(streamer);
+		////}
 	}
 	override void onMsg(terminal_msg_.up_.UnknownMsg unknownMsg, TerminalNetwork from) {
-		import terminal_msg_.up_meta_move_;
-		final switch (unknownMsg.type) {
-			case MsgType.read:
-				log("metaRadar msg read:");
-				auto msg = ReadMsg(unknownMsg);
-				if (msg.axis == Axis.forward) {
-					forwardReaders ~= from;
-				}
-				else if (msg.axis == Axis.strafe) {
-					strafeReaders ~= from;
-				}
-				break;
-			case MsgType.stream:
-				log("metaRadar msg stream:");
-				auto msg = StreamMsg(unknownMsg);
-				if (msg.axis == Axis.forward) {
-					forwardStreamers ~= from;
-				}
-				else if (msg.axis == Axis.strafe) {
-					strafeStreamers ~= from;
-				}
-				break;
-			case MsgType.set:
-				log("metaRadar msg stream:");
-				auto msg = SetMsg(unknownMsg);
-				msg.value.log;
-				break;
-		}
+		////import terminal_msg_.up_meta_move_;
+		////final switch (unknownMsg.type) {
+		////	case MsgType.read:
+		////		log("metaRadar msg read:");
+		////		auto msg = ReadMsg(unknownMsg);
+		////		if (msg.axis == Axis.forward) {
+		////			forwardReaders ~= from;
+		////		}
+		////		else if (msg.axis == Axis.strafe) {
+		////			strafeReaders ~= from;
+		////		}
+		////		break;
+		////	case MsgType.stream:
+		////		log("metaRadar msg stream:");
+		////		auto msg = StreamMsg(unknownMsg);
+		////		if (msg.axis == Axis.forward) {
+		////			forwardStreamers ~= from;
+		////		}
+		////		else if (msg.axis == Axis.strafe) {
+		////			strafeStreamers ~= from;
+		////		}
+		////		break;
+		////	case MsgType.set:
+		////		log("metaRadar msg stream:");
+		////		auto msg = SetMsg(unknownMsg);
+		////		msg.value.log;
+		////		break;
+		////}
 	}
 	
 	private {
-		TerminalNetwork[] forwardReaders	= []	;
-		TerminalNetwork[] forwardStreamers	= []	;
-		TerminalNetwork[] strafeReaders	= []	;
-		TerminalNetwork[] strafeStreamers	= []	;
-		
-		void sendForwardRead(TerminalNetwork to) {
-			import terminal_msg_.down_meta_move_;
-			auto msg = UpdateMsg(this.id);
-			msg.axis	= Axis.forward	;
-			msg.value	= 0	;
-			to.send(msg);
-		}
-		void sendStrafeRead(TerminalNetwork to) {
-			import terminal_msg_.down_meta_move_;
-			auto msg = UpdateMsg(this.id);
-			msg.axis	= Axis.strafe	;
-			msg.value	= 0	;
-			to.send(msg);
-		}
+		////TerminalNetwork[] forwardReaders	= []	;
+		////TerminalNetwork[] forwardStreamers	= []	;
+		////TerminalNetwork[] strafeReaders	= []	;
+		////TerminalNetwork[] strafeStreamers	= []	;
+		////
+		////void sendForwardRead(TerminalNetwork to) {
+		////	import terminal_msg_.down_meta_move_;
+		////	auto msg = UpdateMsg(this.id);
+		////	msg.axis	= Axis.forward	;
+		////	msg.value	= 0	;
+		////	to.send(msg);
+		////}
+		////void sendStrafeRead(TerminalNetwork to) {
+		////	import terminal_msg_.down_meta_move_;
+		////	auto msg = UpdateMsg(this.id);
+		////	msg.axis	= Axis.strafe	;
+		////	msg.value	= 0	;
+		////	to.send(msg);
+		////}
 	}
 }
 
