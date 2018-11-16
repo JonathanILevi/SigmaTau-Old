@@ -10,6 +10,7 @@ import core.time;
 
 class Main {
 	this(int gameTick) {
+		gameTick = 1000;
 		auto network	= new NetworkMaster	;
 		auto world	= new World	;
 		////auto shipMgr	= new ShipMgr(world/*Implicitly cast to FlatWorld*/, gameTick)	;

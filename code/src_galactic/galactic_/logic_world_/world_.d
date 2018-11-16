@@ -11,12 +11,12 @@ import galactic_.logic_world_.entities_	.entities_	;
 class World : EntityMaster {
 	this() {
 		import std.random;
-		addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],0));
+		////addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],0));
 		addEntity(new Asteroid());
-		////foreach (_; 0..5) {
-		////	import std.random;
-		////	addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[0,0],0));
-		////}
+		foreach (_; 0..1) {
+			import std.random;
+			addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[0,0],0));
+		}
 	}
 	
 	private Entity[]	_entities	;
@@ -35,19 +35,19 @@ class World : EntityMaster {
 		foreach (ship; newPlayerShips) {
 			addEntity(ship);
 		}
-		////if (++counter == 5) {
-		////	import std.random;
-		////	addEntity(new Asteroid([-1,0],1,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],uniform(-100,100)*0.01));
-		////	if (entities.length>15) {
-		////		foreach (i; 5..entities.length) {
-		////			if (entities[i].type==EntityType.asteroid) {
-		////				removeEntity(entities[i].cst!Asteroid);
-		////				break;
-		////			}
-		////		}	
-		////	}
-		////	counter = 0;
-		////}
+		if (++counter == 2) {
+			import std.random;
+			addEntity(new Asteroid([-1,0],1,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],uniform(-100,100)*0.01));
+			if (entities.length>4) {
+				foreach (i; 5..entities.length) {
+					if (entities[i].type==EntityType.asteroid) {
+						removeEntity(entities[i].cst!Asteroid);
+						break;
+					}
+				}	
+			}
+			counter = 0;
+		}
 		foreach (entity; entities) {
 			entity.update;
 		}
