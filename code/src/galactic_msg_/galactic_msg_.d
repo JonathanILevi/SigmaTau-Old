@@ -5,20 +5,12 @@ import loose_.network_var_	.network_var_;
 
 
 class Entity(bool server) {
-	private {
-		enum both	= Access.both	;
-		static if (server) {
-			enum server	= Access.write	;
-			enum client	= Access.read	;
-		}
-		else {
-			enum server	= Access.read	;
-			enum client	= Access.write	;
-		}
-	}
-	@Sync(0, server) Entity[] {
-		float[2]	pos	;
-		float	ori	;
+	alias Server	= Owner!(server);
+	alias Client	= Owner!(!server);
+	
+	@Sync(0) @Server {
+		float[2]	_pos	;
+		float	_ori	;
 	}
 	
 	mixin NetworkVar;
