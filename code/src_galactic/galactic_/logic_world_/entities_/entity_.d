@@ -116,10 +116,11 @@ abstract class Entity : EntityMaster{
 
 abstract class FlatEntity : Entity {
 	this(float[2] pos=[0,0],float ori=0) {
+		netEntity = new NetEntity!true;
 		super(pos,ori);
 	}
 	public {
-		NetEntity!true	netEntity	= new NetEntity!true;
+		NetEntity!true	netEntity;
 	}
 	protected override @property {
 		float[2]	virtualPos()	{ return netEntity.pos	; }
