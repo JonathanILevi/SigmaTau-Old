@@ -128,7 +128,7 @@ abstract class FlatEntity : Entity {
 		void	virtualOri(float n)	{ netEntity.ori = n	; }
 	}
 	
-	void update_netEntity() {
+	void late2_update_netEntity() {
 		log(true,netEntity._networkVar_0_changed);
 		netEntity.networkVar_update((msg){msg.log;}, []);
 	}

@@ -42,7 +42,13 @@ mixin template EntityTemplate() {
 				__traits(getMember, this, mem)();
 			}
 		}
+		static foreach (mem; __traits(allMembers, typeof(this))) {
+			static if (mem.startsWith("late2_"~prefix~'_')) {
+				pragma(msg, mem);
+				__traits(getMember, this, mem)();
 	}
+}
+}
 }
 
 mixin template PhysicsTemplate() {
