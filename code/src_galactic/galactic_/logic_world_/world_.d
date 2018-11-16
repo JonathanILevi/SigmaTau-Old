@@ -51,6 +51,8 @@ class World : EntityMaster {
 		foreach (entity; entities) {
 			entity.update;
 		}
+		netWorld.networkVar_update((msg){msg.log;}, []);
+		
 		return newPlayerShips;
 	}
 	uint counter = 0;
