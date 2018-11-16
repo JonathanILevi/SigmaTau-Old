@@ -14,30 +14,30 @@ class GalacticMgr {
 	}
 	void update() {
 		{
-			import galactic_msg_.down_;
-			foreach (unknownMsg; network.map!(msgData=>UnknownMsg(msgData))) {
-				final switch (unknownMsg.type) {
-					case MsgType.add:
-						auto msg = AddMsg(unknownMsg);
-						Entity entity = new Entity(msg.pos,msg.ori);
-						entitiesById[msg.id] = entity;
-						world.addEntity(entity);
-						break;
-					case MsgType.update:
-						auto msg = UpdateMsg(unknownMsg);
-						Entity entity = entitiesById[msg.id];
-						entity.pos	= msg.pos	;
-						entity.ori	= msg.ori	;
-						break;
-					case MsgType.remove:
-						auto msg = RemoveMsg(unknownMsg);
-						world.removeEntity(entitiesById[msg.id]);
-						entitiesById.remove(msg.id);
-						break;
-					case MsgType.moveAll:
-						assert(0);
-				}
-			}
+			////import galactic_msg_.down_;
+			////foreach (unknownMsg; network.map!(msgData=>UnknownMsg(msgData))) {
+			////	final switch (unknownMsg.type) {
+			////		case MsgType.add:
+			////			auto msg = AddMsg(unknownMsg);
+			////			Entity entity = new Entity(msg.pos,msg.ori);
+			////			entitiesById[msg.id] = entity;
+			////			world.addEntity(entity);
+			////			break;
+			////		case MsgType.update:
+			////			auto msg = UpdateMsg(unknownMsg);
+			////			Entity entity = entitiesById[msg.id];
+			////			entity.pos	= msg.pos	;
+			////			entity.ori	= msg.ori	;
+			////			break;
+			////		case MsgType.remove:
+			////			auto msg = RemoveMsg(unknownMsg);
+			////			world.removeEntity(entitiesById[msg.id]);
+			////			entitiesById.remove(msg.id);
+			////			break;
+			////		case MsgType.moveAll:
+			////			assert(0);
+			////	}
+			////}
 		}
 		////{
 		////	import galactic_msg_.to_;

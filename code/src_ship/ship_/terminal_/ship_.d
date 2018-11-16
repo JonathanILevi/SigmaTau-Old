@@ -56,11 +56,12 @@ class Ship {
 			}
 		}
 		{
-			import galactic_msg_.up_;
-			auto msg = new ChVelMsg;
-			msg.vel	= [0,0.1];
-			msg.anv	= 0.01;
-			return [msg];
+			////import galactic_msg_.up_;
+			////auto msg = new ChVelMsg;
+			////msg.vel	= [0,0.1];
+			////msg.anv	= 0.01;
+			////return [msg];
+			return [];
 		}
 	}
 	

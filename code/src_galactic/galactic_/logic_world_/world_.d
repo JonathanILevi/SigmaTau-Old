@@ -3,18 +3,20 @@ import commonImports;
 
 import std.traits;
 
-import galactic_.logic_world_	.entity_	;
-
-import galactic_.flat_world_	.world_	: FlatWorld = World	;
-import galactic_.flat_world_	.entity_	: FlatEntity = Entity	;
+import galactic_msg_	.galactic_msg_	: NetWorld = World;
+import galactic_.logic_world_.entities_	.entity_	;
+import galactic_.logic_world_.entities_	.ship_	;
+import galactic_.logic_world_.entities_	.entities_	;
 
 class World : EntityMaster {
 	this() {
-		flatWorld	= new FlatWorld;
-		foreach (_; 0..5) {
-			import std.random;
-			addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[0,0],0));
-		}
+		import std.random;
+////		addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[0,0],0));
+		addEntity(new Asteroid());
+		////foreach (_; 0..5) {
+		////	import std.random;
+		////	addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[0,0],0));
+		////}
 	}
 	
 	private Entity[]	_entities	;
@@ -23,8 +25,7 @@ class World : EntityMaster {
 			// It would be far better to just pass an const(headconst(Entity)[]) but D does not support this.
 	}
 	
-	FlatWorld	flatWorld	;
-	alias flatWorld this;
+	NetWorld!true	netWorld	= new NetWorld!true;
 	
 	Ship[] update(size_t numNewPlayers) {
 		Ship[] newPlayerShips = [];
@@ -34,19 +35,19 @@ class World : EntityMaster {
 		foreach (ship; newPlayerShips) {
 			addEntity(ship);
 		}
-		if (++counter == 5) {
-			import std.random;
-			addEntity(new Asteroid([-1,0],1,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],uniform(-100,100)*0.01));
-			if (entities.length>15) {
-				foreach (i; 5..entities.length) {
-					if (entities[i].type==EntityType.asteroid) {
-						removeEntity(entities[i].cst!Asteroid);
-						break;
-					}
-				}	
-			}
-			counter = 0;
-		}
+		////if (++counter == 5) {
+		////	import std.random;
+		////	addEntity(new Asteroid([-1,0],1,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],uniform(-100,100)*0.01));
+		////	if (entities.length>15) {
+		////		foreach (i; 5..entities.length) {
+		////			if (entities[i].type==EntityType.asteroid) {
+		////				removeEntity(entities[i].cst!Asteroid);
+		////				break;
+		////			}
+		////		}	
+		////	}
+		////	counter = 0;
+		////}
 		foreach (entity; entities) {
 			entity.update;
 		}
@@ -59,24 +60,24 @@ class World : EntityMaster {
 		this._entities~=entity;
 		entity.addedToWorld();
 		static if (is(E:FlatEntity)) {
-			flatWorld.addEntity(entity);
+			onAddedFlatEntity(entity);
 		}
 	}
 	void removeEntity(E)(E entity) if(!isAbstractClass!E) {
 		entity.removedFromWorld();
 		_entities = _entities.remove(_entities.countUntil(entity));
 		static if (is(E:FlatEntity)) {
-			flatWorld.removeEntity(entity);
+			onRemovedFlatEntity(entity);
 		}
 		entity.master = null;
 	}
 	
 	
-	void onNestedAddedFlatEntity(FlatEntity entity) {
-		flatWorld.addEntity(entity);
+	void onAddedFlatEntity(FlatEntity entity) {
+		netWorld.entities_add(entity.netEntity);
 	}
-	void onNestedRemovedFlatEntity(FlatEntity entity) {
-		flatWorld.removeEntity(entity);
+	void onRemovedFlatEntity(FlatEntity entity) {
+		netWorld.entities_remove(entity.netEntity);
 	}
 }
 
