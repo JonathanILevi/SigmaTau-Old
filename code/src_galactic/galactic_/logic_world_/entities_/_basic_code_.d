@@ -6,10 +6,7 @@ import loose_.vec_math_;
 public import galactic_.logic_world_.entities_	.entity_	;
 
 abstract class NotFlatEntity : Entity {
-	this() {
-		super();
-	}
-	this(float[2] pos,float ori) {
+	this(float[2] pos=[0,0],float ori=0) {
 		super(pos,ori);
 	}
 	private {

@@ -20,10 +20,7 @@ interface  EntityMaster {
 
 abstract class Entity : EntityMaster{
 	abstract @property EntityType type();
-	this() {
-		this([0,0],0);
-	}
-	this(float[2] pos, float ori) {
+	this(float[2] pos=[0,0], float ori=0) {
 		this.pos	= pos	;
 		this.ori	= ori	;
 		callSubInits;
@@ -118,10 +115,7 @@ abstract class Entity : EntityMaster{
 }
 
 abstract class FlatEntity : Entity {
-	this() {
-		super();
-	}
-	this(float[2] pos,float ori) {
+	this(float[2] pos=[0,0],float ori=0) {
 		super(pos,ori);
 	}
 	public {
