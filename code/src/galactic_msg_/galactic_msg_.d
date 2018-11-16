@@ -20,7 +20,7 @@ class World(bool server) {
 	alias Client	= Owner!(!server);
 	
 	@Server {
-		@Sync(0) @SplitArray	Entity[]	_entities	;
+		@Sync(0) @SplitArray	Entity!server[]	_entities	;
 	}
 	@Server @Client {
 		@Sync(1) {
