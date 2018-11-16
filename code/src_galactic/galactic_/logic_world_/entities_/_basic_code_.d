@@ -46,15 +46,17 @@ mixin template EntityTemplate() {
 			static if (mem.startsWith("late2_"~prefix~'_')) {
 				pragma(msg, mem);
 				__traits(getMember, this, mem)();
+			}
+		}
 	}
-}
-}
 }
 
 mixin template PhysicsTemplate() {
 	void late_update_physics() {
-	////	pos[]	= pos[]+vel[]	;
-	////	ori	= ori+anv	;
+		float[2] n;
+		n[]	= pos[]+vel[]	;
+		pos	= n	;
+		ori	= ori+anv	;
 	}
 	
 	float[2]	vel	;
