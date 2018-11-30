@@ -1,26 +1,26 @@
 module galactic_msg_.galactic_msg_;
 import commonImports;
 
-import loose_.network_var_	.network_var_;
-
+import netize;
+import xserial.attribute;
 
 class Entity(bool server) {
 	alias Server	= Owner!(server);
 	alias Client	= Owner!(!server);
 	
-	@Sync(0) @Server {
-		float[2]	_pos	;
-		float	_ori	;
+	/***@Sync(0) @Server*/ @Include {
+		float[2]	/***_*/pos	;
+		float	/***_*/ori	;
 	}
 	
-	mixin NetworkVar;
+	/***mixin Netize;*/
 }
 class World(bool server) {
 	alias Server	= Owner!(server);
 	alias Client	= Owner!(!server);
 	
 	@Server {
-		@Sync(0) @SplitArray	Entity!server[]	_entities	;
+		@Sync(0) /***@SplitArray*/@Change @Length!uint	Entity!server[]	_entities	;
 	}
 	@Server @Client {
 		@Sync(1) {
@@ -29,7 +29,19 @@ class World(bool server) {
 		}
 	}
 	
-	mixin NetworkVar;
+	mixin Netize;
+	
+	void entities_add(Entity!server e) {
+		entities = _entities~e;
+	}
+	void entities_remove(Entity!server e) {
+		import std.algorithm;
+		entities = _entities.remove(entities.countUntil(e));
+	}
+	
+	pragma(inline, true) ubyte[][] update(ubyte[][] msgs, void delegate(string) error=null) { 
+		return this.netizeUpdate(msgs,error);
+	}
 }
 
 
