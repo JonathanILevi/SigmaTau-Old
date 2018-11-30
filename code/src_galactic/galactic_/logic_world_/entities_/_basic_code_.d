@@ -13,12 +13,13 @@ abstract class NotFlatEntity : Entity {
 		float[2]	_pos	;
 		float	_ori	;
 	}
-	override @property {
+	override protected @property {
 		float[2]	virtualPos()	{ return _pos	; }
 		void	virtualPos(float[2] n)	{ _pos = n	; }
 		float	virtualOri()	{ return _ori	; }
 		void	virtualOri(float n)	{ _ori = n	; }
 	}
+	final override @property bool flat() { return false; }
 }
 
 mixin template EntityTemplate() {

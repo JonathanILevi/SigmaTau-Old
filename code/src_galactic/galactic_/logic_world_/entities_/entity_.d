@@ -20,6 +20,8 @@ interface  EntityMaster {
 
 abstract class Entity : EntityMaster{
 	abstract @property EntityType type();
+	abstract @property bool flat();
+	
 	this(float[2] pos=[0,0], float ori=0) {
 		this.pos	= pos	;
 		this.ori	= ori	;
@@ -128,6 +130,7 @@ abstract class FlatEntity : Entity {
 		float	virtualOri()	{ return netEntity.ori	; }
 		void	virtualOri(float n)	{ netEntity.ori = n	; }
 	}
+	final override @property bool flat() { return true; }
 }
 
 
