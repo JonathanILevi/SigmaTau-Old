@@ -10,6 +10,8 @@ import galactic_.logic_world_.entities_	.entities_	;
 
 class World : EntityMaster {
 	this() {
+		netWorld = new NetWorld!true;
+		
 		import std.random;
 		////addEntity(new Asteroid([uniform(-100,100)*0.1,uniform(-100,100)*0.1],uniform(-100,100)*0.01,[uniform(-100,100)*0.01,uniform(-100,100)*0.01],0));
 		addEntity(new Asteroid());
@@ -25,7 +27,7 @@ class World : EntityMaster {
 			// It would be far better to just pass an const(headconst(Entity)[]) but D does not support this.
 	}
 	
-	NetWorld!true	netWorld	= new NetWorld!true;
+	NetWorld!true	netWorld	;
 	
 	Ship[] update(size_t numNewPlayers) {
 		Ship[] newPlayerShips = [];
