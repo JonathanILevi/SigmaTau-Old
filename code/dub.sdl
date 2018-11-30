@@ -12,6 +12,7 @@ dependency "cst"	version="~>1.0"
 dependency "queue"	version="~>1.0"
 
 dependency "xserial"	version="~>1.1"
+dependency "netize"	version="~>1.0.0-alpha.1"
 
 dependency "vibe-d"	version="~>0.8"
 
