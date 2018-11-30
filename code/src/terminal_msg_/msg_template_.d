@@ -16,7 +16,7 @@ mixin template  MsgTemplate(){
 	static Msg opCall(const(ubyte)[] msgData) {
 		assert(msgData[0] == msgData.length);
 		assert(type==msgData[2]);
-		return msgData[3..$].deserialize!(Msg, Endian.littleEndian, ubyte);
+		return msgData[3..$].deserialize!Msg;
 	}
 	
 	@property
@@ -24,7 +24,7 @@ mixin template  MsgTemplate(){
 		static if (componentType!=255) {
 			assert(component!=255);
 		}
-		auto data = this.serialize!(Endian.littleEndian, ubyte);
+		auto data = this.serialize;
 		data = [(data.length+3).cst!ubyte, component.cst!ubyte, type.cst!ubyte]~data;
 		assert(data.length == data[0]);
 		return data;

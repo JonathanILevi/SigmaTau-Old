@@ -1,7 +1,7 @@
 module terminal_msg_.up_meta_radar_;
 import commonImports;
 
-import xserial;
+import loose_	.serialize_	;
 
 import terminal_msg_.msg_template_;
 
