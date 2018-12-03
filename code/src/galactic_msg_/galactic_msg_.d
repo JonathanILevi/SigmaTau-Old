@@ -11,6 +11,8 @@ class Entity(bool server) {
 	/***@Sync(0) @Server*/ @Include {
 		float[2]	/***_*/pos	;
 		float	/***_*/ori	;
+		float[2]	/***_*/vel	;
+		float	/***_*/anv	;
 	}
 	
 	/***mixin Netize;*/
